@@ -1,0 +1,12 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+# Install native binaries (Next SWC, esbuild…) for both macOS and Linux so the
+# same node_modules works on the Mac and in Linux sandboxes/CI.
+supportedArchitectures:
+  os: [current, darwin, linux]
+  cpu: [current, arm64, x64]
+
+onlyBuiltDependencies:
+  - esbuild

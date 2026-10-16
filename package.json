@@ -1,0 +1,16 @@
+{
+  "name": "casa",
+  "private": true,
+  "packageManager": "pnpm@10.34.7",
+  "engines": { "node": ">=20.9" },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck"
+  },
+  "devDependencies": {
+    "turbo": "^2.11.0",
+    "typescript": "^5.9.0"
+  }
+}

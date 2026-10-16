@@ -1,0 +1,58 @@
+/* Deliberately plain: no blur, no heavy animation (wall tablet is a Snapdragon 680). */
+:root {
+  --bg: #0f1115;
+  --surface: #181b21;
+  --surface-2: #20242c;
+  --text: #e8eaed;
+  --muted: #8b919c;
+  --accent: #f5b041;
+  --ok: #4caf7a;
+  --warn: #e0a030;
+  --danger: #e05d5d;
+  --radius: 14px;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1, h2, h3 { margin: 0; font-weight: 600; }
+h2 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 24px 0 12px; }
+h3 { font-size: 1rem; margin-bottom: 8px; }
+ul { list-style: none; margin: 0; padding: 0; }
+button { font: inherit; color: inherit; cursor: pointer; }
+
+.page { max-width: 1280px; margin: 0 auto; padding: 16px; }
+
+.status-bar { display: flex; align-items: center; gap: 12px; }
+.status-bar h1 { font-size: 1.4rem; margin-right: auto; }
+.status { font-size: 0.85rem; color: var(--muted); }
+.status--connected { color: var(--ok); }
+.status--reconnecting { color: var(--warn); }
+.status--error { color: var(--danger); }
+.link { background: none; border: 0; color: var(--muted); text-decoration: underline; }
+
+.error { color: var(--danger); }
+
+.room-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+.room { background: var(--surface); border-radius: var(--radius); padding: 14px; }
+
+.entity { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 0; }
+.entity--unavailable { color: var(--muted); }
+.state { font-size: 0.85rem; color: var(--muted); }
+
+.toggle {
+  min-width: 56px; padding: 6px 10px; border: 0; border-radius: 999px;
+  background: var(--surface-2); color: var(--muted);
+}
+.toggle[aria-pressed="true"] { background: var(--accent); color: #1a1a1a; }
+
+.pending li { padding: 4px 0; }
+.pending small { color: var(--muted); }
