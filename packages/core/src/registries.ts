@@ -24,6 +24,8 @@ export interface DeviceEntry {
 
 export interface EntityEntry {
   entity_id: string;
+  platform: string;
+  translation_key: string | null;
   device_id: string | null;
   area_id: string | null;
   hidden_by: string | null;
