@@ -23,9 +23,19 @@ export const PlugIcon = ({ size = 22 }: P) => (
   <svg {...base(size)}><path d="M9 3v5M15 3v5M7 8h10v3a5 5 0 0 1-10 0V8zM12 16v5" /></svg>
 );
 
+export const SunIcon = ({ size = 20 }: P) => (
+  <svg {...base(size)}><circle cx="12" cy="12" r="4" /><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4" /></svg>
+);
+export const MoonIcon = ({ size = 20 }: P) => (
+  <svg {...base(size)}><path d="M19 14.5A7.5 7.5 0 0 1 9.5 5a7.5 7.5 0 1 0 9.5 9.5z" /></svg>
+);
+export const AutoThemeIcon = ({ size = 20 }: P) => (
+  <svg {...base(size)}><circle cx="12" cy="12" r="8" /><path d="M12 4v16" /><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none" /></svg>
+);
+
 /** Weather glyphs, keyed by HA condition. Larger strokes, two tones. */
 export function WeatherIcon({ condition, size = 56 }: { condition: string; size?: number }) {
-  const sun = "var(--accent)";
+  const sun = "var(--sun)";
   const cloud = "var(--text-2)";
   const p = { width: size, height: size, viewBox: "0 0 24 24", fill: "none", strokeWidth: 1.5, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, "aria-hidden": true };
   const cloudPath = "M8 19h9a3.5 3.5 0 0 0 0-7 4.5 4.5 0 0 0-8.4 1.6A2.8 2.8 0 0 0 8 19z";

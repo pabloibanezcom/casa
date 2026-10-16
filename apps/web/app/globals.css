@@ -11,9 +11,10 @@
   --text: #e8ecf1;
   --text-2: #c9d2dc;
   --muted: #9aa6b4;
-  --accent: #f2b450;
-  --accent-ink: #1a1f26;
-  --accent-text: #f2b450;
+  --accent: #4fc98e;
+  --accent-ink: #0b2418;
+  --accent-text: #6fd6a4;
+  --sun: #f2b450;
   --info: #7fb6e8;
   --ok: #8fd1a6;
   --warn: #f0937f;
@@ -31,9 +32,10 @@
   --text: #18202a;
   --text-2: #3a4552;
   --muted: #566271;
-  --accent: #f2b450;
-  --accent-ink: #18202a;
-  --accent-text: #a8650b;
+  --accent: #4fc98e;
+  --accent-ink: #0b2418;
+  --accent-text: #1d7a4e;
+  --sun: #d98e1a;
   --info: #2a669f;
   --ok: #23704a;
   --warn: #b23c28;
@@ -95,6 +97,12 @@ h2 { margin: 0; }
 .clock { display: flex; flex-direction: column; gap: 2px; padding: 4px 4px 0; }
 .clock__time { font-weight: 300; font-size: 88px; line-height: 1; letter-spacing: -0.03em; }
 .clock__date { font-size: 18px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+.clock__row { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.theme-btn {
+  width: 44px; height: 44px; border-radius: 22px; flex-shrink: 0;
+  display: grid; place-items: center; cursor: pointer;
+  border: 1px solid var(--line); background: transparent; color: var(--muted);
+}
 .conn-dot { width: 8px; height: 8px; border-radius: 4px; background: var(--ok); }
 .conn-dot[data-status="reconnecting"] { background: var(--accent); }
 .conn-dot[data-status="error"] { background: var(--warn); }
