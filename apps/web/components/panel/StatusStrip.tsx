@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, type CSSProperties } from "react";
 import { applianceStatus, domainOf, findAppliances, type ApplianceStatus, type HassEntity } from "@casa/core";
 import { useEntities, useHA } from "@casa/core/react";
 import { dayLabel, duration, time } from "@/lib/format";
@@ -33,7 +33,8 @@ export function StatusStrip() {
   const columns = cards.length === 3 ? (wideFirst ? "1.6fr 1fr 1fr" : "repeat(3, 1fr)") : wideFirst ? "1.6fr 1fr" : "repeat(2, 1fr)";
 
   return (
-    <section aria-label="En marcha" className="strip" style={{ gridTemplateColumns: columns }}>
+    // Columns go through a CSS variable so the stylesheet can stack them on phones.
+    <section aria-label="En marcha" className="strip" style={{ "--strip-cols": columns } as CSSProperties}>
       {cards}
     </section>
   );

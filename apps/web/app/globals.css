@@ -138,7 +138,8 @@ h2 { margin: 0; }
 .event__title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* Status strip */
-.strip { display: grid; grid-template-columns: 1.6fr 1fr 1fr; gap: 12px; }
+.strip { display: grid; grid-template-columns: var(--strip-cols, 1.6fr 1fr 1fr); gap: 12px; }
+@media (max-width: 599px) { .strip { grid-template-columns: 1fr; } }
 .strip > :only-child { grid-column: 1 / -1; }
 .status { border-radius: var(--radius); padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; }
 .status--wide { gap: 10px; }
