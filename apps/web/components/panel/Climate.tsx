@@ -1,11 +1,15 @@
 "use client";
 
-import { useMemo } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { findClimateSystem, isHeating, PRESET_LABELS, type ClimateZone, type HassEntities } from "@casa/core";
 import { useCallService, useEntities, useHA } from "@casa/core/react";
 import { degrees } from "@/lib/format";
 import { AwayIcon, FlameIcon, LeafIcon, MinusIcon, PlusIcon, PowerIcon } from "./icons";
 import { useSetpoint } from "./useSetpoint";
+
+const AUTO_CLOSE_MS = 20_000;
+/** Approximate height of an open zone card, to decide which way it grows. */
+const EXPANDED_HEIGHT = 250;
 
 export function useClimateSystem() {
   const { session } = useHA();
@@ -17,6 +21,26 @@ export function Climate() {
   const entities = useEntities();
   const callService = useCallService();
   const system = useClimateSystem();
+  const [openId, setOpenId] = useState<string | null>(null);
+  const idleTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  const close = useCallback(() => setOpenId(null), []);
+  /** Wall panel: an open zone closes itself after a while without touches. */
+  const bump = useCallback(() => {
+    clearTimeout(idleTimer.current);
+    idleTimer.current = setTimeout(close, AUTO_CLOSE_MS);
+  }, [close]);
+
+  useEffect(() => {
+    if (!openId) return;
+    bump();
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && close();
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      clearTimeout(idleTimer.current);
+    };
+  }, [openId, bump, close]);
 
   const floors = useMemo(() => {
     if (!session || !system) return [];
@@ -88,13 +112,22 @@ export function Climate() {
         </div>
       </section>
 
+      {openId && <div className="zone-backdrop" onClick={close} aria-hidden="true" />}
       <div className="climate__floors">
         {floors.map((f) => (
           <section key={f.id ?? "none"} aria-label={f.name}>
             <h2 className="eyebrow climate__floor">{f.name}</h2>
             <div className="zones">
               {f.zones.map(({ zone, name }) => (
-                <Zone key={zone.entityId} zone={zone} name={name} entities={entities} />
+                <Zone
+                  key={zone.entityId}
+                  zone={zone}
+                  name={name}
+                  entities={entities}
+                  open={openId === zone.entityId}
+                  onToggle={() => setOpenId((id) => (id === zone.entityId ? null : zone.entityId))}
+                  onActivity={bump}
+                />
               ))}
             </div>
           </section>
@@ -114,10 +147,34 @@ function floorAverages(floors: { name: string; zones: { zone: ClimateZone }[] }[
     .join(" · ");
 }
 
-function Zone({ zone, name, entities }: { zone: ClimateZone; name: string; entities: HassEntities }) {
+function Zone({
+  zone,
+  name,
+  entities,
+  open,
+  onToggle,
+  onActivity,
+}: {
+  zone: ClimateZone;
+  name: string;
+  entities: HassEntities;
+  open: boolean;
+  onToggle: () => void;
+  onActivity: () => void;
+}) {
   const entity = entities[zone.entityId]!;
   const callService = useCallService();
   const setpoint = useSetpoint(entity);
+  const cardRef = useRef<HTMLElement>(null);
+  const [growUp, setGrowUp] = useState(false);
+
+  // Open downwards unless that would run past the bottom of the zones area.
+  useLayoutEffect(() => {
+    if (!open || !cardRef.current) return setGrowUp(false);
+    const card = cardRef.current.getBoundingClientRect();
+    const area = cardRef.current.closest(".climate__floors")?.getBoundingClientRect();
+    setGrowUp(!!area && card.top + EXPANDED_HEIGHT > area.bottom);
+  }, [open]);
 
   const unavailable = entity.state === "unavailable";
   const off = entity.state === "off";
@@ -135,64 +192,82 @@ function Zone({ zone, name, entities }: { zone: ClimateZone; name: string; entit
     : off
       ? "Apagado"
       : heating
-        ? `Calentando${Number.isFinite(demand) ? ` · ${demand} %` : ""}`
+        ? Number.isFinite(demand) ? `${demand} %` : "Calentando"
         : preset === "away"
           ? "Ausente"
-          : "En reposo";
+          : null;
+
+  const classes = [
+    "card zone",
+    heating && "zone--heating",
+    (off || unavailable) && "zone--off",
+    open && "zone--open",
+    open && growUp && "zone--up",
+  ].filter(Boolean).join(" ");
 
   return (
-    <article className={`card zone ${heating ? "zone--heating" : ""} ${off || unavailable ? "zone--off" : ""}`}>
-      <header className="zone__head">
-        <h3 className="zone__name">{name}</h3>
-        <span className={`zone__state ${unavailable ? "warn" : ""}`}>
-          {heating && <FlameIcon />}
-          {state}
-        </span>
-      </header>
-
-      <div className="zone__current display num">{Number.isFinite(current) ? degrees(current, 1) : "—"}</div>
-
-      <div className="zone__setpoint">
-        <button type="button" className="round-btn" aria-label={`Bajar objetivo de ${name}`} disabled={off || unavailable || !setpoint.canLower} onClick={setpoint.lower}>
-          <MinusIcon />
-        </button>
-        <div className="zone__target">
-          <span className="zone__target-label">{eco && Number.isFinite(setback) ? `Objetivo · eco −${setback}°` : "Objetivo"}</span>
-          <span className={`zone__target-value display num ${setpoint.pending ? "is-pending" : ""}`}>
-            {setpoint.value != null ? degrees(setpoint.value, 1) : "—"}
+    <div className="zone-cell">
+      <article ref={cardRef} className={classes} onPointerDown={open ? onActivity : undefined}>
+        <button type="button" className="zone__summary" aria-expanded={open} onClick={onToggle}>
+          <span className="zone__row">
+            <span className="zone__name">{name}</span>
+            <span className={`zone__state ${unavailable ? "warn" : ""}`}>
+              {heating && <FlameIcon size={14} />}
+              {eco && !heating && !off && <LeafIcon size={14} />}
+              {state}
+            </span>
           </span>
-        </div>
-        <button type="button" className="round-btn" aria-label={`Subir objetivo de ${name}`} disabled={off || unavailable || !setpoint.canRaise} onClick={setpoint.raise}>
-          <PlusIcon />
+          <span className="zone__row zone__row--temps">
+            <span className="zone__current display num">{Number.isFinite(current) ? degrees(current, 1) : "—"}</span>
+            {!off && setpoint.value != null && (
+              <span className={`zone__target num ${setpoint.pending ? "is-pending" : ""}`}>
+                <span className="sr-only">Objetivo </span>→ {degrees(setpoint.value, 1)}
+              </span>
+            )}
+          </span>
         </button>
-      </div>
 
-      <footer className="zone__foot">
-        {presets.includes("eco") && (
-          <button
-            type="button"
-            className="chip"
-            aria-pressed={eco}
-            aria-label={eco ? `Pasar ${name} a confort` : `Pasar ${name} a eco`}
-            disabled={off || unavailable}
-            onClick={() => void callService("climate", "set_preset_mode", { preset_mode: eco ? "comfort" : "eco" }, { entity_id: zone.entityId })}
-          >
-            <LeafIcon /> {PRESET_LABELS.eco}
-          </button>
+        {open && (
+          <div className="zone__controls">
+            <div className="zone__setpoint">
+              <button type="button" className="round-btn" aria-label={`Bajar objetivo de ${name}`} disabled={off || unavailable || !setpoint.canLower} onClick={setpoint.lower}>
+                <MinusIcon />
+              </button>
+              <span className="zone__setpoint-value">
+                <span className="zone__setpoint-label">{eco && Number.isFinite(setback) ? `Objetivo · eco −${setback}°` : "Objetivo"}</span>
+                <span className={`display num ${setpoint.pending ? "is-pending" : ""}`}>{setpoint.value != null ? degrees(setpoint.value, 1) : "—"}</span>
+              </span>
+              <button type="button" className="round-btn" aria-label={`Subir objetivo de ${name}`} disabled={off || unavailable || !setpoint.canRaise} onClick={setpoint.raise}>
+                <PlusIcon />
+              </button>
+            </div>
+            <div className="zone__foot">
+              {presets.includes("eco") && (
+                <button
+                  type="button"
+                  className="chip"
+                  aria-pressed={eco}
+                  aria-label={eco ? `Pasar ${name} a confort` : `Pasar ${name} a eco`}
+                  disabled={off || unavailable}
+                  onClick={() => void callService("climate", "set_preset_mode", { preset_mode: eco ? "comfort" : "eco" }, { entity_id: zone.entityId })}
+                >
+                  <LeafIcon /> {PRESET_LABELS.eco}
+                </button>
+              )}
+              {canTurnOff && (
+                <button
+                  type="button"
+                  className="chip"
+                  disabled={unavailable}
+                  onClick={() => void callService("climate", "set_hvac_mode", { hvac_mode: off ? "heat" : "off" }, { entity_id: zone.entityId })}
+                >
+                  <PowerIcon /> {off ? "Encender" : "Apagar"}
+                </button>
+              )}
+            </div>
+          </div>
         )}
-        {canTurnOff && (
-          <button
-            type="button"
-            className="chip chip--icon"
-            aria-pressed={!off}
-            aria-label={off ? `Encender ${name}` : `Apagar ${name}`}
-            disabled={unavailable}
-            onClick={() => void callService("climate", "set_hvac_mode", { hvac_mode: off ? "heat" : "off" }, { entity_id: zone.entityId })}
-          >
-            <PowerIcon />
-          </button>
-        )}
-      </footer>
-    </article>
+      </article>
+    </div>
   );
 }
