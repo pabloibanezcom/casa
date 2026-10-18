@@ -2,6 +2,10 @@
  * Wall panel. Deliberately plain for the Snapdragon 680: no blur, no shadows
  * in dark mode, no animation beyond progress bars.
  */
+:root {
+  --radius: 12px;
+}
+
 :root,
 [data-theme="dark"] {
   --bg: #1a1f26;
@@ -90,7 +94,7 @@ h2 { margin: 0; }
 
 .card {
   background: var(--surface);
-  border-radius: 20px;
+  border-radius: var(--radius);
   padding: 20px;
   box-shadow: var(--shadow);
 }
@@ -101,7 +105,7 @@ h2 { margin: 0; }
 .clock__date { font-size: 18px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
 .clock__row { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
 .theme-btn {
-  width: 44px; height: 44px; border-radius: 22px; flex-shrink: 0;
+  width: 44px; height: 44px; border-radius: var(--radius); flex-shrink: 0;
   display: grid; place-items: center; cursor: pointer;
   border: 1px solid var(--line); background: transparent; color: var(--muted);
 }
@@ -115,7 +119,7 @@ h2 { margin: 0; }
 .weather__temp { font-size: 44px; line-height: 1; }
 .weather__desc { color: var(--muted); font-size: 15px; }
 .floors-temp { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-.floor-temp { background: var(--inset); border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; }
+.floor-temp { background: var(--inset); border-radius: var(--radius); padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; }
 .floor-temp__value { font-size: 28px; line-height: 1.1; }
 .floor-temp__note { font-size: 13px; color: var(--muted); }
 .hours { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; border-top: 1px solid var(--line); padding-top: 14px; }
@@ -136,7 +140,7 @@ h2 { margin: 0; }
 /* Status strip */
 .strip { display: grid; grid-template-columns: 1.6fr 1fr 1fr; gap: 12px; }
 .strip > :only-child { grid-column: 1 / -1; }
-.status { border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; }
+.status { border-radius: var(--radius); padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; }
 .status--wide { gap: 10px; }
 .status__head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
 .status__title { font-weight: 600; }
@@ -150,7 +154,7 @@ h2 { margin: 0; }
 /* Floor tabs */
 .tabs { display: flex; gap: 8px; flex-wrap: wrap; }
 .tab {
-  min-height: 48px; padding: 0 22px; border-radius: 24px;
+  min-height: 48px; padding: 0 22px; border-radius: var(--radius);
   border: 1px solid var(--line); background: transparent; color: var(--text-2);
   font-size: 16px; cursor: pointer;
 }
@@ -176,7 +180,7 @@ h2 { margin: 0; }
 .room__summary--warn { color: var(--warn); }
 .controls { display: flex; gap: 8px; flex-wrap: wrap; }
 .control {
-  min-height: 48px; padding: 0 14px; border-radius: 14px;
+  min-height: 48px; padding: 0 14px; border-radius: var(--radius);
   display: flex; align-items: center; gap: 8px; cursor: pointer;
   border: 1px solid var(--line); background: var(--inset); color: var(--text-2);
   font-size: 14px; max-width: 100%;
@@ -197,9 +201,9 @@ h2 { margin: 0; }
 .climate__floors { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-bottom: 2px; }
 .climate__floor { margin: 4px 4px 8px; }
 
-.segmented { display: inline-flex; padding: 4px; gap: 4px; border-radius: 16px; background: var(--inset); border: 1px solid var(--line); }
+.segmented { display: inline-flex; padding: 4px; gap: 4px; border-radius: var(--radius); background: var(--inset); border: 1px solid var(--line); }
 .segmented button {
-  min-height: 40px; padding: 0 16px; border: 0; border-radius: 12px; cursor: pointer;
+  min-height: 40px; padding: 0 16px; border: 0; border-radius: var(--radius); cursor: pointer;
   background: transparent; color: var(--text-2); font-size: 15px;
   display: flex; align-items: center; gap: 6px;
 }
@@ -213,7 +217,7 @@ h2 { margin: 0; }
 .zone-cell { position: relative; min-width: 0; }
 .zone {
   position: absolute; top: 0; left: 0; right: 0; min-height: 100%;
-  padding: 0; border: 1px solid transparent; border-radius: 18px; overflow: hidden;
+  padding: 0; border: 1px solid transparent; border-radius: var(--radius); overflow: hidden;
 }
 .zone--heating { border-color: color-mix(in srgb, var(--sun) 55%, transparent); }
 .zone--off .zone__current { opacity: 0.45; }
@@ -236,18 +240,18 @@ h2 { margin: 0; }
 .is-pending { color: var(--accent-text); }
 
 .zone__controls { padding: 0 12px 12px; display: flex; flex-direction: column; gap: 10px; }
-.zone__setpoint { display: flex; align-items: center; justify-content: space-between; gap: 6px; background: var(--inset); border-radius: 14px; padding: 6px; }
+.zone__setpoint { display: flex; align-items: center; justify-content: space-between; gap: 6px; background: var(--inset); border-radius: var(--radius); padding: 6px; }
 .zone__setpoint-value { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 22px; min-width: 0; }
 .zone__setpoint-label { font-size: 12px; color: var(--muted); white-space: nowrap; }
 .round-btn {
-  width: 48px; height: 48px; border-radius: 12px; border: 0; cursor: pointer; flex-shrink: 0;
+  width: 48px; height: 48px; border-radius: var(--radius); border: 0; cursor: pointer; flex-shrink: 0;
   display: grid; place-items: center; background: var(--surface); color: var(--text);
 }
 .round-btn:disabled { opacity: 0.35; cursor: default; }
 
 .zone__foot { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .chip {
-  min-height: 44px; padding: 0 12px; border-radius: 14px; cursor: pointer;
+  min-height: 44px; padding: 0 12px; border-radius: var(--radius); cursor: pointer;
   display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: 14px;
   border: 1px solid var(--line); background: transparent; color: var(--text-2);
 }
