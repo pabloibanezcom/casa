@@ -67,3 +67,22 @@ export function WeatherIcon({ condition, size = 56 }: { condition: string; size?
       return <svg {...p} stroke={cloud}><path d={cloudPath} /></svg>;
   }
 }
+
+export const MinusIcon = ({ size = 22 }: P) => (
+  <svg {...base(size)}><path d="M5 12h14" /></svg>
+);
+export const PlusIcon = ({ size = 22 }: P) => (
+  <svg {...base(size)}><path d="M12 5v14M5 12h14" /></svg>
+);
+export const PowerIcon = ({ size = 20 }: P) => (
+  <svg {...base(size)}><path d="M12 3v8M6.4 6.4a8 8 0 1 0 11.2 0" /></svg>
+);
+export const FlameIcon = ({ size = 16 }: P) => (
+  <svg {...base(size)}><path d="M12 21a6 6 0 0 0 6-6c0-3.5-2.5-5.5-3.5-8.5-.5 2-1.5 3-2.5 3.5C12 7 11 5 9.5 3 9.5 7 6 9.5 6 15a6 6 0 0 0 6 6z" /></svg>
+);
+export const LeafIcon = ({ size = 18 }: P) => (
+  <svg {...base(size)}><path d="M5 19c0-8 5-13 15-14-1 10-6 15-14 15M5 19l7-7" /></svg>
+);
+export const AwayIcon = ({ size = 18 }: P) => (
+  <svg {...base(size)}><path d="M3 11l9-7 9 7M5 10v10h5M14 20h2a4 4 0 0 0 0-8h-1M17 9.5V6" /><path d="M16 16l3 3M19 16l-3 3" /></svg>
+);

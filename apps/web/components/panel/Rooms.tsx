@@ -4,12 +4,14 @@ import { useMemo, useState } from "react";
 import { domainOf, type HassEntities, type HassEntity } from "@casa/core";
 import { useCallService, useEntities, useHA } from "@casa/core/react";
 import { degrees } from "@/lib/format";
-import { BlindIcon, BulbIcon, FanIcon, PlugIcon, TempIcon, TvIcon } from "./icons";
+import { Climate, useClimateSystem } from "./Climate";
+import { BlindIcon, BulbIcon, FanIcon, FlameIcon, PlugIcon, TempIcon, TvIcon } from "./icons";
 
 const ORDER = ["light", "switch", "cover", "fan", "climate", "media_player"];
 /** Integrations whose switches are settings, not room controls. */
 const EXCLUDED_PLATFORMS = new Set(["home_connect", "tapo_control", "eufy_security"]);
 const TAB_KEY = "casa.panel.floor";
+const CLIMATE_TAB = "__climate";
 
 interface RoomModel {
   id: string;
@@ -53,6 +55,9 @@ export function Rooms() {
   const [selected, setSelected] = useState<string | null>(() => {
     try { return localStorage.getItem(TAB_KEY); } catch { return null; }
   });
+  const climate = useClimateSystem();
+  const hasClimate = (climate?.zones.length ?? 0) > 0;
+  const showClimate = hasClimate && selected === CLIMATE_TAB;
   const floor = floors.find((f) => f.id === selected) ?? floors[0];
 
   const select = (id: string) => {
@@ -68,23 +73,32 @@ export function Rooms() {
     return callService("homeassistant", "toggle", {}, target);
   };
 
-  if (!floor) return <p className="empty">No hay estancias con dispositivos. Revisa las áreas en Home Assistant.</p>;
+  if (!floor && !hasClimate) return <p className="empty">No hay estancias con dispositivos. Revisa las áreas en Home Assistant.</p>;
 
   return (
     <>
       <div role="tablist" aria-label="Plantas" className="tabs">
         {floors.map((f) => (
-          <button key={f.id} role="tab" type="button" className="tab" aria-selected={f.id === floor.id} onClick={() => select(f.id)}>
+          <button key={f.id} role="tab" type="button" className="tab" aria-selected={!showClimate && f.id === floor?.id} onClick={() => select(f.id)}>
             {f.name}
           </button>
         ))}
+        {hasClimate && (
+          <button role="tab" type="button" className="tab tab--climate" aria-selected={showClimate} onClick={() => select(CLIMATE_TAB)}>
+            <FlameIcon size={18} /> Climatización
+          </button>
+        )}
       </div>
 
-      <section role="tabpanel" aria-label={`Estancias · ${floor.name}`} className="rooms">
-        {floor.rooms.map((room) => (
-          <Room key={room.id} room={room} entities={entities} onToggle={(e) => void toggle(e)} />
-        ))}
-      </section>
+      {showClimate || !floor ? (
+        <Climate />
+      ) : (
+        <section role="tabpanel" aria-label={`Estancias · ${floor.name}`} className="rooms">
+          {floor.rooms.map((room) => (
+            <Room key={room.id} room={room} entities={entities} onToggle={(e) => void toggle(e)} />
+          ))}
+        </section>
+      )}
     </>
   );
 }
