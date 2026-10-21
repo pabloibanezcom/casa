@@ -193,7 +193,9 @@ h2 { margin: 0; }
   border: 1px solid var(--line); background: var(--inset); color: var(--text-2);
   font-size: 14px; max-width: 100%;
 }
-.control span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.control__text { display: block; min-width: 0; }
+.control__label { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.control__state { display: none; }
 .control[aria-pressed="true"] { border-color: transparent; background: var(--accent); color: var(--accent-ink); font-weight: 600; }
 .control:disabled { cursor: default; opacity: 0.45; }
 .control svg { flex-shrink: 0; }
@@ -204,9 +206,17 @@ h2 { margin: 0; }
   .room { padding: 12px 14px; gap: 8px; }
   .room__name { font-size: 16px; }
   .room__summary { font-size: 13px; }
-  .controls { gap: 6px; }
-  .control { padding: 0 10px; gap: 6px; font-size: 13px; }
-  .control svg { width: 18px; height: 18px; }
+  /* Controls become a 2-column grid of equal tiles: icon, name and state. */
+  .controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+  .control {
+    min-height: 56px; padding: 8px 12px; gap: 10px;
+    justify-content: flex-start; text-align: left; font-size: 14px;
+  }
+  .control svg { width: 20px; height: 20px; }
+  .control__text { display: flex; flex-direction: column; gap: 1px; }
+  .control__label { font-weight: 600; }
+  .control__state { display: block; font-size: 12px; font-weight: 400; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .control[aria-pressed="true"] .control__state { color: var(--accent-ink); opacity: 0.75; }
 }
 
 .empty { color: var(--muted); padding: 8px 4px; }
