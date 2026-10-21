@@ -3,6 +3,8 @@
 import { useHA } from "@casa/core/react";
 import { Agenda } from "./Agenda";
 import { Clock } from "./Clock";
+import { HouseMode } from "./HouseMode";
+import { NightScreen } from "./NightScreen";
 import { Rooms } from "./Rooms";
 import { StatusStrip } from "./StatusStrip";
 import { ThemeProvider } from "./theme";
@@ -17,6 +19,7 @@ export function Panel() {
         <div className="panel" data-theme={theme}>
           <aside className="panel__aside">
             <Clock />
+            <HouseMode />
             <WeatherCard />
             <Agenda />
           </aside>
@@ -25,6 +28,7 @@ export function Panel() {
             <StatusStrip />
             <Rooms />
           </main>
+          <NightScreen />
         </div>
       )}
     </ThemeProvider>

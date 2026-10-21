@@ -99,3 +99,19 @@ export const FloorIcon = ({ storey, size = 18 }: P & { storey: number }) => (
 export const GardenIcon = ({ size = 18 }: P) => (
   <svg {...base(size)}><path d="M12 21v-7M12 14c-3.5 0-6-2.4-6-5.5S8.5 3 12 3s6 2.4 6 5.5S15.5 14 12 14zM5 21h14" /></svg>
 );
+
+export const HomeIcon = ({ size = 22 }: P) => (
+  <svg {...base(size)}><path d="M3.5 11 12 4l8.5 7M6 9.5V20h12V9.5M10 20v-5h4v5" /></svg>
+);
+export const SunsetIcon = ({ size = 22 }: P) => (
+  <svg {...base(size)}><path d="M7 17a5 5 0 0 1 10 0M3 17h2M19 17h2M12 8V4M5.6 10.6 4.2 9.2M18.4 10.6l1.4-1.4M3 21h18M9.5 6 12 3.5 14.5 6" /></svg>
+);
+export const AwayDoorIcon = ({ size = 22 }: P) => (
+  <svg {...base(size)}><path d="M13 4H6v16h7M10 12h11M18 9l3 3-3 3" /></svg>
+);
+export const SuitcaseIcon = ({ size = 22 }: P) => (
+  <svg {...base(size)}><rect x="4" y="7" width="16" height="13" rx="2" /><path d="M9 7V4.5h6V7M9 11v5M15 11v5" /></svg>
+);
+export const GuestsIcon = ({ size = 20 }: P) => (
+  <svg {...base(size)}><circle cx="9" cy="8" r="3" /><path d="M3.5 19a5.5 5.5 0 0 1 11 0M16 5.5a3 3 0 0 1 0 5M17.5 14.5a5.5 5.5 0 0 1 3 4.5" /></svg>
+);
