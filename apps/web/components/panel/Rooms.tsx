@@ -108,19 +108,55 @@ function Room({ room, entities, onToggle }: { room: RoomModel; entities: HassEnt
     .map((id) => entities[id])
     .filter((e): e is HassEntity => !!e && (domainOf(e.entity_id) !== "media_player" || e.attributes.device_class === "tv"));
   const summary = summarize(list);
+  // The thermostat is shown next to the room name instead of as a control.
+  const climate = list.find((e) => domainOf(e.entity_id) === "climate");
+  const controls = list.filter((e) => domainOf(e.entity_id) !== "climate");
 
   return (
     <article className="card room">
       <div className="room__head">
-        <h2 className="room__name">{room.name}</h2>
+        <div className="room__title">
+          <h2 className="room__name">{room.name}</h2>
+          {climate && <RoomTemp entity={climate} />}
+        </div>
         <span className={`room__summary ${summary.tone ? `room__summary--${summary.tone}` : ""}`}>{summary.text}</span>
       </div>
-      <div className="controls">
-        {list.map((e) => (
-          <Control key={e.entity_id} entity={e} label={shortName(e, room.name)} onToggle={() => onToggle(e)} />
-        ))}
-      </div>
+      {controls.length > 0 && (
+        <div className="controls">
+          {controls.map((e) => (
+            <Control key={e.entity_id} entity={e} label={shortName(e, room.name)} onToggle={() => onToggle(e)} />
+          ))}
+        </div>
+      )}
     </article>
+  );
+}
+
+function RoomTemp({ entity }: { entity: HassEntity }) {
+  const current = Number(entity.attributes.current_temperature);
+  const target = Number(entity.attributes.temperature);
+  const unavailable = entity.state === "unavailable";
+  const off = entity.state === "off";
+  const heating = !off && entity.attributes.hvac_action === "heating";
+
+  if (unavailable || !Number.isFinite(current)) {
+    return (
+      <span className="room__temp" aria-label="Temperatura no disponible">
+        <TempIcon size={16} /> —
+      </span>
+    );
+  }
+
+  return (
+    <span
+      className={`room__temp num ${heating ? "room__temp--heating" : ""}`}
+      aria-label={`Temperatura ${degrees(current, 1)}${!off && Number.isFinite(target) ? `, objetivo ${degrees(target, 1)}` : ""}${heating ? ", calentando" : ""}`}
+    >
+      {heating ? <FlameIcon size={14} /> : <TempIcon size={16} />}
+      <span className="room__temp-current">{degrees(current, 1)}</span>
+      {!off && Number.isFinite(target) && <span className="room__temp-target">→ {degrees(target, 1)}</span>}
+      {off && <span className="room__temp-target">apagado</span>}
+    </span>
   );
 }
 
