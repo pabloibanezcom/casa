@@ -181,12 +181,53 @@ function Control({ entity, label, onToggle }: { entity: HassEntity; label: strin
     : domain === "media_player" ? TvIcon
     : entity.attributes.device_class === "outlet" ? PlugIcon
     : BulbIcon;
+  const state = stateText(entity, domain, on);
   return (
-    <button type="button" className="control" aria-pressed={on} disabled={unavailable} onClick={onToggle} title={entity.attributes.friendly_name}>
+    <button
+      type="button"
+      className="control"
+      aria-pressed={on}
+      disabled={unavailable}
+      onClick={onToggle}
+      title={entity.attributes.friendly_name}
+      aria-label={`${label}: ${state}`}
+    >
       <Icon />
-      <span>{label}</span>
+      <span className="control__text">
+        <span className="control__label">{label}</span>
+        {/* Only shown on phones, where controls become tiles. */}
+        <span className="control__state" aria-hidden="true">{state}</span>
+      </span>
     </button>
   );
+}
+
+const pct = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? Math.round(v) : null);
+
+/** Short, readable state for the phone tiles: "Encendido · 60 %", "Abierta", "Sin conexión"… */
+function stateText(e: HassEntity, domain: string, on: boolean): string {
+  if (e.state === "unavailable") return "Sin conexión";
+
+  if (domain === "cover") {
+    if (e.state === "opening") return "Abriendo";
+    if (e.state === "closing") return "Cerrando";
+    const pos = pct(e.attributes.current_position);
+    if (pos !== null && pos > 0 && pos < 100) return `Abierta · ${pos} %`;
+    return e.state === "open" ? "Abierta" : "Cerrada";
+  }
+
+  if (domain === "media_player") return on ? "Encendida" : "Apagada";
+
+  if (!on) return "Apagado";
+  if (domain === "light") {
+    const b = pct(e.attributes.brightness);
+    return b !== null ? `Encendido · ${Math.round((b / 255) * 100)} %` : "Encendido";
+  }
+  if (domain === "fan") {
+    const p = pct(e.attributes.percentage);
+    return p !== null ? `Encendido · ${p} %` : "Encendido";
+  }
+  return "Encendido";
 }
 
 function summarize(list: HassEntity[]): { text: string; tone?: "on" | "warn" } {
