@@ -352,3 +352,30 @@ h2 { margin: 0; }
 .night__dot--warn { background: #b98a3e; }
 
 .house-mode__mock { text-transform: none; letter-spacing: 0; color: var(--warn); }
+
+/* Mode dock: phones only, appears at the bottom once the Modo card scrolls away. */
+.mode-dock { display: none; }
+@media (max-width: 599px) {
+  .panel { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+  .mode-dock {
+    display: block; position: fixed; z-index: 30;
+    left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom));
+    transform: translateY(calc(100% + 24px)); opacity: 0; pointer-events: none;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+  .mode-dock--visible { transform: none; opacity: 1; pointer-events: auto; }
+  .mode-dock__inner {
+    display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; padding: 4px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow-pop);
+  }
+  .mode-dock__item {
+    min-height: 52px; padding: 4px 2px; border: 0; border-radius: calc(var(--radius) - 4px); cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+    background: transparent; color: var(--text-2); font-size: 11px;
+  }
+  .mode-dock__item span { max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mode-dock__item svg { color: var(--muted); }
+  .mode-dock__item[aria-checked="true"] { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+  .mode-dock__item[aria-checked="true"] svg { color: var(--accent-ink); }
+}

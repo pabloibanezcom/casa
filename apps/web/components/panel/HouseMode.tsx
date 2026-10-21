@@ -1,6 +1,6 @@
 "use client";
 
-import type { ComponentType } from "react";
+import { useEffect, useRef, useState, type ComponentType } from "react";
 import { houseModeKey, type HouseModeKey } from "@casa/core";
 import { useGuestsEntity, useModeEntity } from "./modeMock";
 import { AwayDoorIcon, GuestsIcon, HomeIcon, MoonIcon, SuitcaseIcon, SunsetIcon } from "./icons";
@@ -25,52 +25,75 @@ export function useHouseMode(): HouseModeKey | null {
 export function HouseMode() {
   const { entity: mode, mocked, select } = useModeEntity();
   const { entity: guests, toggle: toggleGuests } = useGuestsEntity();
+  const cardRef = useRef<HTMLElement>(null);
+  const [cardHidden, setCardHidden] = useState(false);
+
+  // Phones: once the card scrolls out of view, a dock with the modes stays at the bottom.
+  useEffect(() => {
+    const card = cardRef.current;
+    if (!card || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(([e]) => setCardHidden(!e!.isIntersecting), { threshold: 0 });
+    io.observe(card);
+    return () => io.disconnect();
+  }, [mode !== undefined]);
 
   if (!mode) return null;
   const options = (mode.attributes.options as string[] | undefined) ?? [];
   const unavailable = mode.state === "unavailable";
 
+  const modeButtons = (variant: "card" | "dock") =>
+    options.map((option) => {
+      const Icon = ICONS[houseModeKey(option)];
+      const selected = mode.state === option;
+      return (
+        <button
+          key={option}
+          type="button"
+          role="radio"
+          aria-checked={selected}
+          className={variant === "dock" ? "mode-dock__item" : "mode"}
+          disabled={unavailable}
+          onClick={() => !selected && void select(option)}
+        >
+          <Icon size={20} />
+          <span>{option}</span>
+        </button>
+      );
+    });
+
   return (
-    <section aria-label="Modo de la casa" className="card house-mode">
-      <div className="house-mode__head">
-        <span className="eyebrow">
-          Modo{mocked && <span className="house-mode__mock"> · simulado</span>}
-        </span>
-        {guests && (
-          <button
-            type="button"
-            role="switch"
-            aria-checked={guests.state === "on"}
-            className="guests"
-            disabled={guests.state === "unavailable"}
-            onClick={() => void toggleGuests()}
-          >
-            <GuestsIcon size={16} />
-            <span>Invitados</span>
-            <span className="guests__track" aria-hidden="true"><span className="guests__thumb" /></span>
-          </button>
-        )}
-      </div>
-      <div className="house-mode__options" role="radiogroup" aria-label="Modo">
-        {options.map((option) => {
-          const Icon = ICONS[houseModeKey(option)];
-          const selected = mode.state === option;
-          return (
+    <>
+      <section aria-label="Modo de la casa" className="card house-mode" ref={cardRef}>
+        <div className="house-mode__head">
+          <span className="eyebrow">
+            Modo{mocked && <span className="house-mode__mock"> · simulado</span>}
+          </span>
+          {guests && (
             <button
-              key={option}
               type="button"
-              role="radio"
-              aria-checked={selected}
-              className="mode"
-              disabled={unavailable}
-              onClick={() => !selected && void select(option)}
+              role="switch"
+              aria-checked={guests.state === "on"}
+              className="guests"
+              disabled={guests.state === "unavailable"}
+              onClick={() => void toggleGuests()}
             >
-              <Icon size={20} />
-              <span>{option}</span>
+              <GuestsIcon size={16} />
+              <span>Invitados</span>
+              <span className="guests__track" aria-hidden="true"><span className="guests__thumb" /></span>
             </button>
-          );
-        })}
-      </div>
-    </section>
+          )}
+        </div>
+        <div className="house-mode__options" role="radiogroup" aria-label="Modo">
+          {modeButtons("card")}
+        </div>
+      </section>
+
+      {/* Only shown on phones (CSS) and only while the card is off screen. */}
+      <nav className={`mode-dock ${cardHidden ? "mode-dock--visible" : ""}`} aria-label="Modo de la casa" inert={!cardHidden}>
+        <div className="mode-dock__inner" role="radiogroup" aria-label="Modo">
+          {modeButtons("dock")}
+        </div>
+      </nav>
+    </>
   );
 }
