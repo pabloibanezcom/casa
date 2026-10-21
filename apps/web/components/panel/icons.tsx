@@ -86,3 +86,16 @@ export const LeafIcon = ({ size = 18 }: P) => (
 export const AwayIcon = ({ size = 18 }: P) => (
   <svg {...base(size)}><path d="M3 11l9-7 9 7M5 10v10h5M14 20h2a4 4 0 0 0 0-8h-1M17 9.5V6" /><path d="M16 16l3 3M19 16l-3 3" /></svg>
 );
+
+/** A two-storey house with the given storey highlighted (0 = ground floor). */
+export const FloorIcon = ({ storey, size = 18 }: P & { storey: number }) => (
+  <svg {...base(size)}>
+    <path d="M3.5 10.5 12 4l8.5 6.5" />
+    <path d="M5.5 9v11h13V9" />
+    <path d="M5.5 14.5h13" />
+    <rect x="5.5" y={storey === 0 ? 14.5 : 9.2} width="13" height={storey === 0 ? 5.5 : 5.3} fill="currentColor" opacity="0.35" stroke="none" />
+  </svg>
+);
+export const GardenIcon = ({ size = 18 }: P) => (
+  <svg {...base(size)}><path d="M12 21v-7M12 14c-3.5 0-6-2.4-6-5.5S8.5 3 12 3s6 2.4 6 5.5S15.5 14 12 14zM5 21h14" /></svg>
+);

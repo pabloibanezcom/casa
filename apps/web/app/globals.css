@@ -153,13 +153,31 @@ h2 { margin: 0; }
 .progress__bar { height: 100%; background: var(--info); border-radius: 4px; transition: width 0.6s linear; }
 
 /* Floor tabs */
-.tabs { display: flex; gap: 8px; flex-wrap: wrap; }
-.tab {
-  min-height: 48px; padding: 0 22px; border-radius: var(--radius);
-  border: 1px solid var(--line); background: transparent; color: var(--text-2);
-  font-size: 16px; cursor: pointer;
+/* Floor / view switcher: one segmented control. */
+.tabs-wrap { flex-shrink: 0; }
+.tabs {
+  position: relative; display: flex; align-items: center; gap: 4px; padding: 4px;
+  background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow);
+  overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;
 }
-.tab[aria-selected="true"] { border-color: transparent; background: var(--chip-on-bg); color: var(--chip-on-ink); font-weight: 600; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  flex: 1 1 0; min-width: max-content; min-height: 44px; padding: 0 16px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  border: 0; border-radius: calc(var(--radius) - 4px);
+  background: transparent; color: var(--text-2); font-size: 15px; cursor: pointer; white-space: nowrap;
+}
+.tab svg { flex-shrink: 0; color: var(--muted); }
+.tab:not([aria-selected="true"]):hover { background: var(--inset); }
+.tab[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.tab[aria-selected="true"] svg { color: var(--accent-ink); }
+.tabs__divider { width: 1px; align-self: stretch; margin: 8px 2px; background: var(--line); flex-shrink: 0; }
+
+/* Phones: scroll sideways instead of wrapping, and stay pinned while scrolling rooms. */
+@media (max-width: 599px) {
+  .tabs-wrap { position: sticky; top: 0; z-index: 20; margin: 0 -16px; padding: 8px 16px; background: var(--bg); }
+  .tab { flex: 0 0 auto; padding: 0 14px; font-size: 14px; }
+}
 
 /* Rooms */
 .rooms {
@@ -288,4 +306,3 @@ h2 { margin: 0; }
 .chip[aria-pressed="true"] { border-color: transparent; background: var(--accent); color: var(--accent-ink); font-weight: 600; }
 .chip:disabled { opacity: 0.4; cursor: default; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-.tab--climate { display: inline-flex; align-items: center; gap: 8px; }
