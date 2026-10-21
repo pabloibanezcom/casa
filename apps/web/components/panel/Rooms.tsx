@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { domainOf, type HassEntities, type HassEntity } from "@casa/core";
 import { useCallService, useEntities, useHA } from "@casa/core/react";
 import { degrees } from "@/lib/format";
@@ -59,6 +59,18 @@ export function Rooms() {
   const hasClimate = (climate?.zones.length ?? 0) > 0;
   const showClimate = hasClimate && selected === CLIMATE_TAB;
   const floor = floors.find((f) => f.id === selected) ?? floors[0];
+  const activeKey = showClimate ? CLIMATE_TAB : floor?.id;
+  const tablistRef = useRef<HTMLDivElement>(null);
+
+  // Keep the selected segment in view when the bar scrolls sideways (phones).
+  // Scrolls only the bar itself, never the page.
+  useEffect(() => {
+    const list = tablistRef.current;
+    const active = list?.querySelector<HTMLElement>('[aria-selected="true"]');
+    if (!list || !active || list.scrollWidth <= list.clientWidth) return;
+    const left = active.offsetLeft - (list.clientWidth - active.offsetWidth) / 2;
+    list.scrollTo({ left: Math.max(0, left), behavior: "smooth" });
+  }, [activeKey, floors.length]);
 
   const select = (id: string) => {
     setSelected(id);
@@ -78,7 +90,7 @@ export function Rooms() {
   return (
     <>
       <div className="tabs-wrap">
-        <div role="tablist" aria-label="Plantas" className="tabs">
+        <div role="tablist" aria-label="Plantas" className="tabs" ref={tablistRef}>
           {floors.map((f, i) => (
             <button key={f.id} role="tab" type="button" className="tab" aria-selected={!showClimate && f.id === floor?.id} onClick={() => select(f.id)}>
               {f.id ? <FloorIcon storey={i} /> : <GardenIcon />}

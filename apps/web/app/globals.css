@@ -156,7 +156,7 @@ h2 { margin: 0; }
 /* Floor / view switcher: one segmented control. */
 .tabs-wrap { flex-shrink: 0; }
 .tabs {
-  display: flex; align-items: center; gap: 4px; padding: 4px;
+  position: relative; display: flex; align-items: center; gap: 4px; padding: 4px;
   background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow);
   overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;
 }
