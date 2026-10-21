@@ -1,8 +1,8 @@
 "use client";
 
 import type { ComponentType } from "react";
-import { GUESTS_ENTITY, HOUSE_MODE_ENTITY, houseModeKey, type HouseModeKey } from "@casa/core";
-import { useCallService, useEntity } from "@casa/core/react";
+import { houseModeKey, type HouseModeKey } from "@casa/core";
+import { useGuestsEntity, useModeEntity } from "./modeMock";
 import { AwayDoorIcon, GuestsIcon, HomeIcon, MoonIcon, SuitcaseIcon, SunsetIcon } from "./icons";
 
 const ICONS: Record<HouseModeKey, ComponentType<{ size?: number }>> = {
@@ -16,16 +16,15 @@ const ICONS: Record<HouseModeKey, ComponentType<{ size?: number }>> = {
 
 /** Current house mode as a stable key ("night", "away"…), or null if HA has no mode helper. */
 export function useHouseMode(): HouseModeKey | null {
-  const mode = useEntity(HOUSE_MODE_ENTITY);
+  const mode = useModeEntity().entity;
   if (!mode || mode.state === "unavailable" || mode.state === "unknown") return null;
   return houseModeKey(mode.state);
 }
 
 /** Mode selector (+ guests switch). Renders nothing until the helpers exist in HA. */
 export function HouseMode() {
-  const mode = useEntity(HOUSE_MODE_ENTITY);
-  const guests = useEntity(GUESTS_ENTITY);
-  const callService = useCallService();
+  const { entity: mode, mocked, select } = useModeEntity();
+  const { entity: guests, toggle: toggleGuests } = useGuestsEntity();
 
   if (!mode) return null;
   const options = (mode.attributes.options as string[] | undefined) ?? [];
@@ -34,7 +33,9 @@ export function HouseMode() {
   return (
     <section aria-label="Modo de la casa" className="card house-mode">
       <div className="house-mode__head">
-        <span className="eyebrow">Modo</span>
+        <span className="eyebrow">
+          Modo{mocked && <span className="house-mode__mock"> · simulado</span>}
+        </span>
         {guests && (
           <button
             type="button"
@@ -42,7 +43,7 @@ export function HouseMode() {
             aria-checked={guests.state === "on"}
             className="guests"
             disabled={guests.state === "unavailable"}
-            onClick={() => void callService("input_boolean", "toggle", {}, { entity_id: GUESTS_ENTITY })}
+            onClick={() => void toggleGuests()}
           >
             <GuestsIcon size={16} />
             <span>Invitados</span>
@@ -62,7 +63,7 @@ export function HouseMode() {
               aria-checked={selected}
               className="mode"
               disabled={unavailable}
-              onClick={() => !selected && void callService("input_select", "select_option", { option }, { entity_id: HOUSE_MODE_ENTITY })}
+              onClick={() => !selected && void select(option)}
             >
               <Icon size={20} />
               <span>{option}</span>

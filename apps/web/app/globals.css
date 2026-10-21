@@ -350,3 +350,5 @@ h2 { margin: 0; }
 .night__dot { width: 8px; height: 8px; border-radius: 4px; }
 .night__dot--ok { background: #4f8a64; }
 .night__dot--warn { background: #b98a3e; }
+
+.house-mode__mock { text-transform: none; letter-spacing: 0; color: var(--warn); }
