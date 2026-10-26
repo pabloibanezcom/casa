@@ -129,23 +129,30 @@ function speakerState(p: HassEntity) {
   return "Libre";
 }
 
-/** The speaker to show controls for: one playing, else one paused. */
-export function useActivePlayer(): HassEntity | undefined {
+/**
+ * Speakers currently in use (playing or paused), leaders first. Grouped
+ * followers mirror their leader, so only leaders are returned. Speakers that
+ * play the same thing separately are all included, so the mini player can
+ * pause or skip on every one of them at once.
+ */
+export function useActivePlayers(): HassEntity[] {
   const entities = useEntities();
   const ma = useMusicAssistant();
   return useMemo(() => {
     const list = (ma?.players ?? []).map((id) => entities[id]).filter((e): e is HassEntity => !!e);
-    // A grouped follower mirrors its leader; show the leader only.
     const leaders = list.filter((p) => {
       const members = (p.attributes.group_members as string[] | undefined) ?? [];
       return members.length === 0 || members[0] === p.entity_id;
     });
-    return leaders.find((p) => p.state === "playing") ?? leaders.find((p) => p.state === "paused");
+    const playing = leaders.filter((p) => p.state === "playing");
+    return playing.length ? playing : leaders.filter((p) => p.state === "paused");
   }, [ma, entities]);
 }
 
 /** Compact player for the status strip, so music can be controlled from any tab. */
-export function MusicStatusCard({ player }: { player: HassEntity }) {
+export function MusicStatusCard({ players }: { players: HassEntity[] }) {
+  // The one with track info drives the display; controls act on all of them.
+  const player = players.find((p) => p.attributes.media_title) ?? players[0]!;
   const { session } = useHA();
   const entities = useEntities();
   const conn = session!.connection;
@@ -157,13 +164,28 @@ export function MusicStatusCard({ player }: { player: HassEntity }) {
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   useEffect(() => setLocalVolume(null), [volume]);
 
-  const members = ((player.attributes.group_members as string[] | undefined) ?? []).filter((id) => id !== player.entity_id);
-  const where = [player, ...members.map((id) => entities[id]).filter((e): e is HassEntity => !!e)].map(name).join(" + ");
+  const ids = [...new Set(players.flatMap((p) => [p.entity_id, ...((p.attributes.group_members as string[] | undefined) ?? [])]))];
+  const where = ids.map((id) => entities[id]).filter((e): e is HassEntity => !!e).map(name).join(" + ");
+  const isPlaying = players.some((p) => p.state === "playing");
+  // Pause everything that plays; resume everything that's paused.
+  const togglePlay = () =>
+    void Promise.all(
+      players.map((p) =>
+        conn.sendMessagePromise({
+          type: "call_service",
+          domain: "media_player",
+          service: isPlaying ? "media_pause" : "media_play",
+          service_data: {},
+          target: { entity_id: p.entity_id },
+        }),
+      ),
+    );
+  const next = () => void Promise.all(players.map((p) => mediaControl(conn, p.entity_id, "media_next_track")));
 
   const onVolume = (v: number) => {
     setLocalVolume(v);
     clearTimeout(timer.current);
-    timer.current = setTimeout(() => void setVolume(conn, player.entity_id, v), 250);
+    timer.current = setTimeout(() => void Promise.all(players.map((p) => setVolume(conn, p.entity_id, v))), 250);
   };
 
   return (
@@ -180,12 +202,12 @@ export function MusicStatusCard({ player }: { player: HassEntity }) {
           <button
             type="button"
             className="round-btn round-btn--primary"
-            aria-label={player.state === "playing" ? "Pausar" : "Reproducir"}
-            onClick={() => void mediaControl(conn, player.entity_id, "media_play_pause")}
+            aria-label={isPlaying ? "Pausar" : "Reproducir"}
+            onClick={togglePlay}
           >
-            {player.state === "playing" ? <PauseIcon /> : <PlayIcon />}
+            {isPlaying ? <PauseIcon /> : <PlayIcon />}
           </button>
-          <button type="button" className="round-btn" aria-label="Siguiente" onClick={() => void mediaControl(conn, player.entity_id, "media_next_track")}>
+          <button type="button" className="round-btn" aria-label="Siguiente" onClick={next}>
             <NextIcon />
           </button>
         </div>

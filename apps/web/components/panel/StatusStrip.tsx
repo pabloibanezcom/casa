@@ -4,7 +4,7 @@ import { useMemo, type CSSProperties, type ReactNode } from "react";
 import { applianceStatus, domainOf, findAppliances, type ApplianceStatus, type HassEntity } from "@casa/core";
 import { useEntities, useHA } from "@casa/core/react";
 import { dayLabel, duration, time } from "@/lib/format";
-import { MusicStatusCard, useActivePlayer } from "./Music";
+import { MusicStatusCard, useActivePlayers } from "./Music";
 import { useNow } from "./useNow";
 
 /** "What's happening now": music, running/finished appliances and the front door. */
@@ -16,7 +16,8 @@ export function StatusStrip() {
   const appliances = useMemo(() => (session ? findAppliances(session.registries) : []), [session]);
   const lock = useMemo(() => Object.values(entities).find((e) => domainOf(e.entity_id) === "lock"), [entities]);
 
-  const player = useActivePlayer();
+  const players = useActivePlayers();
+  const player = players.length > 0;
   const slots = Math.max(1, 3 - (lock ? 1 : 0) - (player ? 1 : 0));
 
   const active = appliances
@@ -27,7 +28,7 @@ export function StatusStrip() {
 
   // Each card with its column weight: music and running appliances get more room.
   const cards: { el: ReactNode; wide: boolean }[] = [
-    ...(player ? [{ el: <MusicStatusCard key="music" player={player} />, wide: true }] : []),
+    ...(player ? [{ el: <MusicStatusCard key="music" players={players} />, wide: true }] : []),
     ...active.map(({ a, status }) => ({
       el: <ApplianceCard key={a.deviceId} name={a.name} status={status} now={now} />,
       wide: status.kind === "running",
