@@ -5,13 +5,15 @@ import { domainOf, type HassEntities, type HassEntity } from "@casa/core";
 import { useCallService, useEntities, useHA } from "@casa/core/react";
 import { degrees } from "@/lib/format";
 import { Climate, useClimateSystem } from "./Climate";
-import { BlindIcon, BulbIcon, FanIcon, FlameIcon, FloorIcon, GardenIcon, PlugIcon, TempIcon, TvIcon } from "./icons";
+import { Music, useMusicAssistant } from "./Music";
+import { BlindIcon, BulbIcon, FanIcon, FlameIcon, FloorIcon, GardenIcon, MusicIcon, PlugIcon, TempIcon, TvIcon } from "./icons";
 
 const ORDER = ["light", "switch", "cover", "fan", "climate", "media_player"];
 /** Integrations whose switches are settings, not room controls. */
 const EXCLUDED_PLATFORMS = new Set(["home_connect", "tapo_control", "eufy_security"]);
 const TAB_KEY = "casa.panel.floor";
 const CLIMATE_TAB = "__climate";
+const MUSIC_TAB = "__music";
 
 interface RoomModel {
   id: string;
@@ -58,8 +60,11 @@ export function Rooms() {
   const climate = useClimateSystem();
   const hasClimate = (climate?.zones.length ?? 0) > 0;
   const showClimate = hasClimate && selected === CLIMATE_TAB;
+  const music = useMusicAssistant();
+  const hasMusic = !!music;
+  const showMusic = hasMusic && selected === MUSIC_TAB;
   const floor = floors.find((f) => f.id === selected) ?? floors[0];
-  const activeKey = showClimate ? CLIMATE_TAB : floor?.id;
+  const activeKey = showMusic ? MUSIC_TAB : showClimate ? CLIMATE_TAB : floor?.id;
   const tablistRef = useRef<HTMLDivElement>(null);
 
   // Keep the selected segment in view when the bar scrolls sideways (phones).
@@ -102,7 +107,7 @@ export function Rooms() {
     return callService("homeassistant", "toggle", {}, target);
   };
 
-  if (!floor && !hasClimate) return <p className="empty">No hay estancias con dispositivos. Revisa las áreas en Home Assistant.</p>;
+  if (!floor && !hasClimate && !hasMusic) return <p className="empty">No hay estancias con dispositivos. Revisa las áreas en Home Assistant.</p>;
 
   return (
     <>
@@ -116,7 +121,7 @@ export function Rooms() {
             />
           )}
           {floors.map((f, i) => (
-            <button key={f.id} role="tab" type="button" className="tab" aria-selected={!showClimate && f.id === floor?.id} onClick={() => select(f.id)}>
+            <button key={f.id} role="tab" type="button" className="tab" aria-selected={!showClimate && !showMusic && f.id === floor?.id} onClick={() => select(f.id)}>
               {f.id ? <FloorIcon storey={i} /> : <GardenIcon />}
               <span>{f.name}</span>
             </button>
@@ -130,10 +135,21 @@ export function Rooms() {
               </button>
             </>
           )}
+          {hasMusic && (
+            <>
+              {!hasClimate && <span className="tabs__divider" aria-hidden="true" />}
+              <button role="tab" type="button" className="tab" aria-selected={showMusic} onClick={() => select(MUSIC_TAB)}>
+                <MusicIcon />
+                <span>Música</span>
+              </button>
+            </>
+          )}
         </div>
       </div>
 
-      {showClimate || !floor ? (
+      {showMusic ? (
+        <Music key="music" />
+      ) : showClimate || !floor ? (
         <Climate key="climate" />
       ) : (
         <section key={floor.id} role="tabpanel" aria-label={`Estancias · ${floor.name}`} className="rooms">
