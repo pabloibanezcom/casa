@@ -115,3 +115,28 @@ export const SuitcaseIcon = ({ size = 22 }: P) => (
 export const GuestsIcon = ({ size = 20 }: P) => (
   <svg {...base(size)}><circle cx="9" cy="8" r="3" /><path d="M3.5 19a5.5 5.5 0 0 1 11 0M16 5.5a3 3 0 0 1 0 5M17.5 14.5a5.5 5.5 0 0 1 3 4.5" /></svg>
 );
+
+export const MusicIcon = ({ size = 18 }: P) => (
+  <svg {...base(size)}><path d="M9 18V5l11-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="17" cy="16" r="3" /></svg>
+);
+export const SpeakerIcon = ({ size = 18 }: P) => (
+  <svg {...base(size)}><rect x="6" y="3" width="12" height="18" rx="2" /><circle cx="12" cy="14" r="3" /><path d="M12 7h.01" strokeWidth={2.5} /></svg>
+);
+export const PlayIcon = ({ size = 22 }: P) => (
+  <svg {...base(size)}><path d="M8 5.5v13l11-6.5z" fill="currentColor" /></svg>
+);
+export const PauseIcon = ({ size = 22 }: P) => (
+  <svg {...base(size)}><path d="M8 5v14M16 5v14" strokeWidth={3} /></svg>
+);
+export const NextIcon = ({ size = 22 }: P) => (
+  <svg {...base(size)}><path d="M6 6l9 6-9 6z" fill="currentColor" /><path d="M18 6v12" strokeWidth={2.2} /></svg>
+);
+export const PrevIcon = ({ size = 22 }: P) => (
+  <svg {...base(size)}><path d="M18 6l-9 6 9 6z" fill="currentColor" /><path d="M6 6v12" strokeWidth={2.2} /></svg>
+);
+export const RadioIcon = ({ size = 18 }: P) => (
+  <svg {...base(size)}><rect x="3" y="8" width="18" height="12" rx="2" /><path d="M7 8l10-4M15 14h2M7 14a2 2 0 1 0 4 0 2 2 0 0 0-4 0" /></svg>
+);
+export const SearchIcon = ({ size = 18 }: P) => (
+  <svg {...base(size)}><circle cx="11" cy="11" r="6.5" /><path d="M20 20l-4.2-4.2" /></svg>
+);

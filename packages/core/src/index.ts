@@ -6,4 +6,5 @@ export * from "./weather";
 export * from "./appliances";
 export * from "./climate";
 export * from "./modes";
+export * from "./music";
 export type { HassEntity, HassEntities, Connection, Auth, AuthData } from "home-assistant-js-websocket";

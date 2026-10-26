@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, type CSSProperties } from "react";
+import { useMemo, type CSSProperties, type ReactNode } from "react";
 import { applianceStatus, domainOf, findAppliances, type ApplianceStatus, type HassEntity } from "@casa/core";
 import { useEntities, useHA } from "@casa/core/react";
 import { dayLabel, duration, time } from "@/lib/format";
+import { MusicStatusCard, useActivePlayers } from "./Music";
 import { useNow } from "./useNow";
 
-/** "What's happening now": running/finished appliances and the front door. */
+/** "What's happening now": music, running/finished appliances and the front door. */
 export function StatusStrip() {
   const { session } = useHA();
   const entities = useEntities();
@@ -15,27 +16,35 @@ export function StatusStrip() {
   const appliances = useMemo(() => (session ? findAppliances(session.registries) : []), [session]);
   const lock = useMemo(() => Object.values(entities).find((e) => domainOf(e.entity_id) === "lock"), [entities]);
 
+  const players = useActivePlayers();
+  const player = players.length > 0;
+  const slots = Math.max(1, 3 - (lock ? 1 : 0) - (player ? 1 : 0));
+
   const active = appliances
     .map((a) => ({ a, status: applianceStatus(a, entities) }))
     .filter(({ status }) => status.kind !== "idle")
     .sort((x, y) => rank(x.status) - rank(y.status))
-    .slice(0, lock ? 2 : 3);
+    .slice(0, slots);
 
-  const cards = [
-    ...active.map(({ a, status }) => <ApplianceCard key={a.deviceId} name={a.name} status={status} now={now} />),
-    ...(active.length === 0
-      ? [<div key="idle" className="card status"><span className="status__title">Electrodomésticos</span><span className="status__sub">Nada en marcha</span></div>]
+  // Each card with its column weight: music and running appliances get more room.
+  const cards: { el: ReactNode; wide: boolean }[] = [
+    ...(player ? [{ el: <MusicStatusCard key="music" players={players} />, wide: true }] : []),
+    ...active.map(({ a, status }) => ({
+      el: <ApplianceCard key={a.deviceId} name={a.name} status={status} now={now} />,
+      wide: status.kind === "running",
+    })),
+    ...(active.length === 0 && !player
+      ? [{ el: <div key="idle" className="card status"><span className="status__title">Electrodomésticos</span><span className="status__sub">Nada en marcha</span></div>, wide: false }]
       : []),
-    ...(lock ? [<LockCard key="lock" lock={lock} now={now} />] : []),
+    ...(lock ? [{ el: <LockCard key="lock" lock={lock} now={now} />, wide: false }] : []),
   ];
 
-  const wideFirst = active[0]?.status.kind === "running";
-  const columns = cards.length === 3 ? (wideFirst ? "1.6fr 1fr 1fr" : "repeat(3, 1fr)") : wideFirst ? "1.6fr 1fr" : "repeat(2, 1fr)";
+  const columns = cards.map((c) => (c.wide && cards.length > 1 ? "1.6fr" : "1fr")).join(" ");
 
   return (
     // Columns go through a CSS variable so the stylesheet can stack them on phones.
     <section aria-label="En marcha" className="strip" style={{ "--strip-cols": columns } as CSSProperties}>
-      {cards}
+      {cards.map((c) => c.el)}
     </section>
   );
 }
