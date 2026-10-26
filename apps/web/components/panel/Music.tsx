@@ -13,7 +13,7 @@ import {
   type SearchResults,
 } from "@casa/core";
 import { useEntities, useHA } from "@casa/core/react";
-import { MusicIcon, NextIcon, PauseIcon, PlayIcon, PrevIcon, RadioIcon, SearchIcon, SpeakerIcon } from "./icons";
+import { MusicIcon, NextIcon, PauseIcon, PlayIcon, RadioIcon, SearchIcon, SpeakerIcon } from "./icons";
 
 type Source = "radio" | "spotify";
 const SPEAKERS_KEY = "casa.music.speakers";
@@ -83,10 +83,6 @@ export function Music() {
 
   if (!ma) return <p className="empty">Music Assistant no está disponible en Home Assistant.</p>;
 
-  const nowPlaying =
-    players.find((p) => speakers.includes(p.entity_id) && ["playing", "paused"].includes(p.state)) ??
-    players.find((p) => p.state === "playing");
-
   return (
     <div className="music">
       <section className="card music__speakers" aria-label="Altavoces">
@@ -116,8 +112,6 @@ export function Music() {
         {speakers.length > 1 && <p className="music__hint">Sonará en {speakers.length} altavoces a la vez, sincronizados.</p>}
       </section>
 
-      {nowPlaying && session && <NowPlaying player={nowPlaying} hassUrl={session.auth.data.hassUrl} />}
-
       <Browser source={source} onSource={setSource} onPlay={play} />
       {error && <p className="warn" role="alert">{error}</p>}
     </div>
@@ -135,15 +129,36 @@ function speakerState(p: HassEntity) {
   return "Libre";
 }
 
-function NowPlaying({ player, hassUrl }: { player: HassEntity; hassUrl: string }) {
+/** The speaker to show controls for: one playing, else one paused. */
+export function useActivePlayer(): HassEntity | undefined {
+  const entities = useEntities();
+  const ma = useMusicAssistant();
+  return useMemo(() => {
+    const list = (ma?.players ?? []).map((id) => entities[id]).filter((e): e is HassEntity => !!e);
+    // A grouped follower mirrors its leader; show the leader only.
+    const leaders = list.filter((p) => {
+      const members = (p.attributes.group_members as string[] | undefined) ?? [];
+      return members.length === 0 || members[0] === p.entity_id;
+    });
+    return leaders.find((p) => p.state === "playing") ?? leaders.find((p) => p.state === "paused");
+  }, [ma, entities]);
+}
+
+/** Compact player for the status strip, so music can be controlled from any tab. */
+export function MusicStatusCard({ player }: { player: HassEntity }) {
   const { session } = useHA();
+  const entities = useEntities();
   const conn = session!.connection;
+  const hassUrl = session!.auth.data.hassUrl;
   const pic = player.attributes.entity_picture as string | undefined;
   const art = pic ? (pic.startsWith("http") ? pic : `${hassUrl}${pic}`) : null;
   const volume = typeof player.attributes.volume_level === "number" ? player.attributes.volume_level : null;
   const [localVolume, setLocalVolume] = useState<number | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   useEffect(() => setLocalVolume(null), [volume]);
+
+  const members = ((player.attributes.group_members as string[] | undefined) ?? []).filter((id) => id !== player.entity_id);
+  const where = [player, ...members.map((id) => entities[id]).filter((e): e is HassEntity => !!e)].map(name).join(" + ");
 
   const onVolume = (v: number) => {
     setLocalVolume(v);
@@ -152,38 +167,42 @@ function NowPlaying({ player, hassUrl }: { player: HassEntity; hassUrl: string }
   };
 
   return (
-    <section className="card now-playing" aria-label="Reproduciendo ahora">
-      <div className="now-playing__art">{art ? <img src={art} alt="" /> : <MusicIcon size={28} />}</div>
-      <div className="now-playing__info">
-        <span className="now-playing__title">{String(player.attributes.media_title ?? "—")}</span>
-        <span className="now-playing__artist">
-          {[player.attributes.media_artist, name(player)].filter(Boolean).join(" · ")}
-        </span>
-        {volume !== null && (
-          <input
-            className="volume"
-            type="range"
-            min={0}
-            max={1}
-            step={0.02}
-            value={localVolume ?? volume}
-            onChange={(e) => onVolume(Number(e.target.value))}
-            aria-label={`Volumen de ${name(player)}`}
-          />
-        )}
+    <div className="card status status--music">
+      <div className="mini-player">
+        <div className="mini-player__art">{art ? <img src={art} alt="" /> : <MusicIcon size={22} />}</div>
+        <div className="mini-player__info">
+          <span className="status__title mini-player__title">{String(player.attributes.media_title ?? "Música")}</span>
+          <span className="status__sub mini-player__sub">
+            {[player.attributes.media_artist, where].filter(Boolean).join(" · ")}
+          </span>
+        </div>
+        <div className="mini-player__controls">
+          <button
+            type="button"
+            className="round-btn round-btn--primary"
+            aria-label={player.state === "playing" ? "Pausar" : "Reproducir"}
+            onClick={() => void mediaControl(conn, player.entity_id, "media_play_pause")}
+          >
+            {player.state === "playing" ? <PauseIcon /> : <PlayIcon />}
+          </button>
+          <button type="button" className="round-btn" aria-label="Siguiente" onClick={() => void mediaControl(conn, player.entity_id, "media_next_track")}>
+            <NextIcon />
+          </button>
+        </div>
       </div>
-      <div className="now-playing__controls">
-        <button type="button" className="round-btn" aria-label="Anterior" onClick={() => void mediaControl(conn, player.entity_id, "media_previous_track")}>
-          <PrevIcon />
-        </button>
-        <button type="button" className="round-btn round-btn--primary" aria-label={player.state === "playing" ? "Pausar" : "Reproducir"} onClick={() => void mediaControl(conn, player.entity_id, "media_play_pause")}>
-          {player.state === "playing" ? <PauseIcon /> : <PlayIcon />}
-        </button>
-        <button type="button" className="round-btn" aria-label="Siguiente" onClick={() => void mediaControl(conn, player.entity_id, "media_next_track")}>
-          <NextIcon />
-        </button>
-      </div>
-    </section>
+      {volume !== null && (
+        <input
+          className="volume"
+          type="range"
+          min={0}
+          max={1}
+          step={0.02}
+          value={localVolume ?? volume}
+          onChange={(e) => onVolume(Number(e.target.value))}
+          aria-label={`Volumen de ${name(player)}`}
+        />
+      )}
+    </div>
   );
 }
 
