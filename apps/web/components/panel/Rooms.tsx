@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { domainOf, type HassEntities, type HassEntity } from "@casa/core";
 import { useCallService, useEntities, useHA } from "@casa/core/react";
 import { degrees } from "@/lib/format";
@@ -72,6 +72,23 @@ export function Rooms() {
     list.scrollTo({ left: Math.max(0, left), behavior: "smooth" });
   }, [activeKey, floors.length]);
 
+  // Sliding indicator under the active segment. Measured from the DOM so it
+  // follows segment widths, wrapping and resizes; no transition on first paint.
+  const [indicator, setIndicator] = useState<{ left: number; width: number; ready: boolean } | null>(null);
+  useLayoutEffect(() => {
+    const list = tablistRef.current;
+    if (!list) return;
+    const measure = () => {
+      const active = list.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]');
+      if (!active) return setIndicator(null);
+      setIndicator((prev) => ({ left: active.offsetLeft, width: active.offsetWidth, ready: prev !== null }));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(list);
+    return () => ro.disconnect();
+  }, [activeKey, floors.length]);
+
   const select = (id: string) => {
     setSelected(id);
     try { localStorage.setItem(TAB_KEY, id); } catch {}
@@ -91,6 +108,13 @@ export function Rooms() {
     <>
       <div className="tabs-wrap">
         <div role="tablist" aria-label="Plantas" className="tabs" ref={tablistRef}>
+          {indicator && (
+            <span
+              className={`tabs__indicator ${indicator.ready ? "tabs__indicator--animate" : ""}`}
+              style={{ width: indicator.width, transform: `translateX(${indicator.left}px)` }}
+              aria-hidden="true"
+            />
+          )}
           {floors.map((f, i) => (
             <button key={f.id} role="tab" type="button" className="tab" aria-selected={!showClimate && f.id === floor?.id} onClick={() => select(f.id)}>
               {f.id ? <FloorIcon storey={i} /> : <GardenIcon />}
@@ -110,9 +134,9 @@ export function Rooms() {
       </div>
 
       {showClimate || !floor ? (
-        <Climate />
+        <Climate key="climate" />
       ) : (
-        <section role="tabpanel" aria-label={`Estancias · ${floor.name}`} className="rooms">
+        <section key={floor.id} role="tabpanel" aria-label={`Estancias · ${floor.name}`} className="rooms">
           {floor.rooms.map((room) => (
             <Room key={room.id} room={room} entities={entities} onToggle={(e) => void toggle(e)} />
           ))}
