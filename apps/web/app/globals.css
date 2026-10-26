@@ -171,9 +171,26 @@ h2 { margin: 0; }
   border: 0; border-radius: calc(var(--radius) - 4px);
   background: transparent; color: var(--text-2); font-size: 15px; cursor: pointer; white-space: nowrap;
 }
-.tab svg { flex-shrink: 0; color: var(--muted); }
+.tab svg { flex-shrink: 0; color: var(--muted); transition: color 0.2s ease; }
 .tab:not([aria-selected="true"]):hover { background: var(--inset); }
-.tab[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.tab { position: relative; z-index: 1; transition: color 0.2s ease, background-color 0.2s ease; }
+/* The green background is the sliding .tabs__indicator, not the button itself. */
+.tab[aria-selected="true"] { background: transparent; color: var(--accent-ink); font-weight: 600; }
+.tabs__indicator {
+  position: absolute; top: 4px; bottom: 4px; left: 0; z-index: 0;
+  border-radius: calc(var(--radius) - 4px); background: var(--accent);
+  pointer-events: none;
+}
+.tabs__indicator--animate { transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), width 0.28s cubic-bezier(0.2, 0.8, 0.2, 1); }
+
+/* New tab content eases in. */
+@keyframes panel-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.rooms, .climate { animation: panel-in 0.22s ease-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tabs__indicator--animate, .tab { transition: none; }
+  .rooms, .climate { animation: none; }
+}
 .tab[aria-selected="true"] svg { color: var(--accent-ink); }
 .tabs__divider { width: 1px; align-self: stretch; margin: 8px 2px; background: var(--line); flex-shrink: 0; }
 
