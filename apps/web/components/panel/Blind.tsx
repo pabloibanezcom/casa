@@ -43,6 +43,15 @@ function useInverted(entityId: string) {
   return [inverted, toggle] as const;
 }
 
+function statusText(e: HassEntity, position: number) {
+  if (e.state === "unavailable") return "Sin conexión";
+  if (e.state === "opening") return "Abriendo…";
+  if (e.state === "closing") return "Cerrando…";
+  if (position === 0) return "Cerrada";
+  if (position === 100) return "Abierta";
+  return `Abierta al ${position} %`;
+}
+
 /** The room-card pill for a blind: the fill shows how open it is, tapping opens the full control. */
 export function BlindPill({ entity, label }: { entity: HassEntity; label: string }) {
   const [open, setOpen] = useState(false);
