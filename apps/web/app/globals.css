@@ -226,21 +226,29 @@ h2 { margin: 0; }
 .room__summary { font-size: 14px; color: var(--muted); }
 .room__summary--on { color: var(--accent-text); }
 .room__summary--warn { color: var(--warn); }
-.controls { display: flex; gap: 8px; flex-wrap: wrap; }
-.controls { gap: 6px; }
+.controls { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 6px; }
+/* Pill: the green fill shows the level (brightness, blind position) or full when simply on. */
 .control {
-  min-height: 36px; padding: 0 10px; border-radius: var(--radius);
-  display: flex; align-items: center; gap: 6px; cursor: pointer;
+  position: relative; overflow: hidden; isolation: isolate;
+  min-height: 40px; padding: 0 12px; border-radius: var(--radius);
+  display: flex; align-items: center; gap: 8px; cursor: pointer; text-align: left;
   border: 1px solid var(--line); background: var(--inset); color: var(--text-2);
-  font-size: 13px; max-width: 100%;
+  font-size: 13px; min-width: 0; user-select: none; -webkit-user-select: none;
 }
-.control svg { width: 16px; height: 16px; }
-.control__text { display: block; min-width: 0; }
+.control[data-dimmable] { touch-action: pan-y; cursor: ew-resize; }
+.control__fill {
+  position: absolute; inset: 0 auto 0 0; z-index: -1;
+  background: var(--accent); transition: width 0.25s ease-out;
+}
+.control--dragging .control__fill { transition: none; }
+.control svg { width: 16px; height: 16px; flex-shrink: 0; }
+.control__text { display: block; min-width: 0; flex: 1; }
 .control__label { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .control__state { display: none; }
-.control[aria-pressed="true"] { border-color: transparent; background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.control__value { flex-shrink: 0; font-size: 12px; opacity: 0.75; }
+.control[aria-pressed="true"] { border-color: transparent; color: var(--accent-ink); font-weight: 600; }
 .control:disabled { cursor: default; opacity: 0.45; }
-.control svg { flex-shrink: 0; }
+@media (prefers-reduced-motion: reduce) { .control__fill { transition: none; } }
 
 /* Phones: tighter room cards, still 44px touch targets. */
 @media (max-width: 599px) {
@@ -258,6 +266,7 @@ h2 { margin: 0; }
   .control__text { display: flex; flex-direction: column; gap: 1px; }
   .control__label { font-weight: 600; }
   .control__state { display: block; font-size: 12px; font-weight: 400; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .control__value { display: none; }
   .control[aria-pressed="true"] .control__state { color: var(--accent-ink); opacity: 0.75; }
 }
 
