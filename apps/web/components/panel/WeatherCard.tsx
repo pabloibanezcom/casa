@@ -47,26 +47,22 @@ export function WeatherCard() {
 
   return (
     <section aria-label="Tiempo" className="card weather">
-      <div className="weather__now">
-        <WeatherIcon condition={weather?.state ?? "cloudy"} />
-        <div>
+      <div className="weather__top">
+        <div className="weather__now">
           <div className="eyebrow">Exterior</div>
-          <div className="weather__temp display num">{temp != null ? degrees(temp) : "—"}</div>
+          <div className="weather__main">
+            <WeatherIcon condition={weather?.state ?? "cloudy"} />
+            <span className="weather__temp display num">{temp != null ? degrees(temp) : "—"}</span>
+          </div>
           <div className="weather__desc">
             {weather ? CONDITION_LABELS[weather.state] ?? weather.state : "Sin datos"}
-            {today?.temperature != null && today.templow != null && ` · ${degrees(today.temperature)} / ${degrees(today.templow)}`}
+            {today?.temperature != null && today.templow != null && ` · ${Math.round(today.temperature)}/${Math.round(today.templow)}°`}
           </div>
         </div>
-      </div>
-
-      <div className="floors-temp">
         {floors.map((f) => (
-          <div key={f.id} className="floor-temp">
-            <span className="eyebrow">{f.name}</span>
+          <div key={f.id} className="floor-temp" title={f.count ? `Media de ${f.count} ${f.count === 1 ? "estancia" : "estancias"}` : undefined}>
+            <span className="eyebrow">{f.name.replace(/^planta\s+/i, "")}</span>
             <span className="floor-temp__value display num">{f.value != null ? degrees(f.value, 1) : "—"}</span>
-            <span className="floor-temp__note">
-              {f.count ? `Media de ${f.count} ${f.count === 1 ? "estancia" : "estancias"}` : "Sin datos"}
-            </span>
           </div>
         ))}
       </div>
