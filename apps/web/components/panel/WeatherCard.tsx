@@ -16,6 +16,8 @@ export function WeatherCard() {
 
   const today = daily[0];
   const nextHours = hourly.filter((h) => Date.parse(h.datetime) > Date.now()).slice(0, 4);
+  // Rain chances take a whole line, so only show them when something is actually expected.
+  const anyRain = nextHours.some((h) => (h.precipitation_probability ?? 0) > 0);
   const todayKey = new Date().toDateString();
   const nextDays = daily.filter((d) => new Date(d.datetime).toDateString() !== todayKey && Date.parse(d.datetime) > Date.now()).slice(0, 4);
   const temp = weather?.attributes.temperature as number | undefined;
@@ -78,7 +80,7 @@ export function WeatherCard() {
             <div key={h.datetime} className="hour">
               <span className="hour__t">{new Date(h.datetime).getHours()} h</span>
               <span className="hour__temp display num">{h.temperature != null ? degrees(h.temperature) : "—"}</span>
-              <span className="hour__rain">{h.precipitation_probability != null ? `${h.precipitation_probability} %` : " "}</span>
+              {anyRain && <span className="hour__rain">{h.precipitation_probability != null ? `${h.precipitation_probability} %` : " "}</span>}
             </div>
           ))}
         </div>
@@ -88,8 +90,10 @@ export function WeatherCard() {
         <div className="hours days">
           {nextDays.map((d) => (
             <div key={d.datetime} className="hour">
-              <span className="hour__t">{new Date(d.datetime).toLocaleDateString("es-ES", { weekday: "short" }).replace(".", "")}</span>
-              <WeatherIcon condition={d.condition ?? "cloudy"} size={22} />
+              <span className="day__head">
+                <span className="hour__t">{new Date(d.datetime).toLocaleDateString("es-ES", { weekday: "short" }).replace(".", "")}</span>
+                <WeatherIcon condition={d.condition ?? "cloudy"} size={18} />
+              </span>
               <span className="day__temps num">
                 <span className="day__high">{d.temperature != null ? degrees(d.temperature) : "—"}</span>
                 {d.templow != null && <span className="day__low">{degrees(d.templow)}</span>}
