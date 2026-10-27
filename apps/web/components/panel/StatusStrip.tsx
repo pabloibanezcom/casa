@@ -28,7 +28,7 @@ export function StatusStrip() {
     .slice(0, slots);
 
   // Each card with its column weight: music and running appliances get more room.
-  const cards: { el: ReactNode; wide: boolean }[] = [
+  const cards: { el: ReactNode; wide: boolean; fit?: boolean }[] = [
     ...(player ? [{ el: <MusicStatusCard key="music" players={players} />, wide: true }] : []),
     ...active.map(({ a, status }) => ({
       el: <ApplianceCard key={a.deviceId} name={a.name} status={status} now={now} />,
@@ -37,10 +37,10 @@ export function StatusStrip() {
     ...(active.length === 0 && !player
       ? [{ el: <div key="idle" className="card status"><span className="status__title">Electrodomésticos</span><span className="status__sub">Nada en marcha</span></div>, wide: false }]
       : []),
-    ...(lock ? [{ el: <LockButton key="lock" lock={lock} />, wide: false }] : []),
+    ...(lock ? [{ el: <LockButton key="lock" lock={lock} />, wide: false, fit: true }] : []),
   ];
 
-  const columns = cards.map((c) => (c.wide && cards.length > 1 ? "1.6fr" : "1fr")).join(" ");
+  const columns = cards.map((c) => (c.fit ? "max-content" : c.wide && cards.length > 1 ? "1.6fr" : "1fr")).join(" ");
 
   return (
     // Columns go through a CSS variable so the stylesheet can stack them on phones.
@@ -112,7 +112,7 @@ function LockButton({ lock }: { lock: HassEntity }) {
   useEffect(() => setArmed(false), [state]);
 
   const label =
-    armed ? "Toca otra vez para abrir"
+    armed ? "Toca para abrir"
     : state === "locked" ? "Cerrada con llave"
     : state === "unlocked" ? "Sin llave"
     : state === "open" ? "Abierta"
@@ -140,11 +140,11 @@ function LockButton({ lock }: { lock: HassEntity }) {
       data-state={armed ? "armed" : state}
       disabled={state === "unavailable" || busy}
       onClick={onClick}
-      aria-label={`Puerta de entrada: ${label}. ${locked ? "Tocar para abrir" : "Tocar para cerrar"}`}
+      aria-label={`Puerta: ${label}. ${locked ? "Tocar para abrir" : "Tocar para cerrar"}`}
     >
       <span className="lock-btn__icon">{locked ? <LockIcon /> : <LockOpenIcon />}</span>
       <span className="lock-btn__text">
-        <span className="status__title">Puerta de entrada</span>
+        <span className="status__title">Puerta</span>
         <span className="status__line">{label}</span>
       </span>
     </button>
