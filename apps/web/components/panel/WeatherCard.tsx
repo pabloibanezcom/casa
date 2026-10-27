@@ -60,9 +60,9 @@ export function WeatherCard() {
           </div>
         </div>
         <div className="indoor" aria-label="Interior">
-          {floors.map((f) => (
+          {floors.map((f, i) => (
             <div key={f.id} className="indoor__row" title={f.count ? `Media de ${f.count} ${f.count === 1 ? "estancia" : "estancias"}` : undefined}>
-              <FloorIcon size={16} />
+              <FloorIcon storey={i} size={16} />
               <span className="indoor__name">{f.name}</span>
               <span className="indoor__value num">{f.value != null ? degrees(f.value, 1) : "—"}</span>
             </div>
