@@ -424,6 +424,8 @@ function shortName(e: HassEntity, areaName: string) {
   const full = String(e.attributes.friendly_name ?? e.entity_id);
   const words = areaName.toLowerCase().split(/\s+/);
   const kept = full.split(/\s+/).filter((w) => !words.includes(w.toLowerCase()));
+  // The icon already says it's a light or a switch, so "Luz escalera B" reads as "Escalera B".
+  if (kept.length > 1 && /^(luz|luces|interruptor)$/i.test(kept[0]!)) kept.shift();
   const short = kept.join(" ").trim();
   return short ? capitalize(short) : full;
 }
