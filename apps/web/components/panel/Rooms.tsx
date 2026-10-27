@@ -153,9 +153,11 @@ export function Rooms() {
         <Climate key="climate" />
       ) : (
         <section key={floor.id} role="tabpanel" aria-label={`Estancias · ${floor.name}`} className="rooms">
-          {floor.rooms.map((room) => (
-            <Room key={room.id} room={room} entities={entities} onToggle={(e) => void toggle(e)} />
-          ))}
+          <div className="rooms__cols">
+            {floor.rooms.map((room) => (
+              <Room key={room.id} room={room} entities={entities} onToggle={(e) => void toggle(e)} />
+            ))}
+          </div>
         </section>
       )}
     </>
