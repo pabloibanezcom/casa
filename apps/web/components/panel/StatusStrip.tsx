@@ -59,14 +59,14 @@ function ApplianceCard({ name, status, now }: { name: string; status: ApplianceS
       <div className="card status status--wide">
         <div className="status__head">
           <span className="status__title">{title}</span>
-          {status.finishesAt && <span className="status__sub">Termina {time(status.finishesAt)}</span>}
+          <span className="status__sub">
+            {status.paused ? "En pausa" : status.progress != null ? `${status.progress} %` : "En marcha"}
+            {left != null && left > 0 && ` · quedan ${duration(left)}`}
+            {status.finishesAt && ` · ${time(status.finishesAt)}`}
+          </span>
         </div>
         <div className="progress" role="progressbar" aria-valuenow={status.progress ?? undefined} aria-valuemin={0} aria-valuemax={100}>
           <div className="progress__bar" style={{ width: `${status.progress ?? 0}%` }} />
-        </div>
-        <div className="status__sub">
-          {status.paused ? "En pausa" : status.progress != null ? `${status.progress} %` : "En marcha"}
-          {left != null && left > 0 && ` · quedan ${duration(left)}`}
         </div>
       </div>
     );
@@ -75,8 +75,10 @@ function ApplianceCard({ name, status, now }: { name: string; status: ApplianceS
     return (
       <div className="card status">
         <span className="status__title">{name}</span>
-        <span className="status__line ok">Terminado {sinceLabel(status.at, now)}</span>
-        <span className="status__sub">Listo para vaciar</span>
+        <span className="status__line">
+          <span className="ok">Terminado {sinceLabel(status.at, now)}</span>
+          <span className="status__sub"> · listo para vaciar</span>
+        </span>
       </div>
     );
   }
@@ -101,8 +103,10 @@ function LockCard({ lock, now }: { lock: HassEntity; now: Date }) {
   return (
     <div className="card status">
       <span className="status__title">Puerta de entrada</span>
-      <span className={`status__line ${tone}`}>{label}</span>
-      <span className="status__sub">Desde {sinceLabel(since, now, "las")}</span>
+      <span className="status__line">
+        <span className={tone}>{label}</span>
+        <span className="status__sub"> · desde {sinceLabel(since, now, "las")}</span>
+      </span>
     </div>
   );
 }
