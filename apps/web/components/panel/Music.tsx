@@ -191,13 +191,25 @@ export function MusicStatusCard({ players }: { players: HassEntity[] }) {
   return (
     <div className="card status status--music">
       <div className="mini-player">
-        <div className="mini-player__art">{art ? <img src={art} alt="" /> : <MusicIcon size={22} />}</div>
+        <div className="mini-player__art">{art ? <img src={art} alt="" /> : <MusicIcon size={18} />}</div>
         <div className="mini-player__info">
           <span className="status__title mini-player__title">{String(player.attributes.media_title ?? "Música")}</span>
           <span className="status__sub mini-player__sub">
             {[player.attributes.media_artist, where].filter(Boolean).join(" · ")}
           </span>
         </div>
+        {volume !== null && (
+          <input
+            className="volume mini-player__volume"
+            type="range"
+            min={0}
+            max={1}
+            step={0.02}
+            value={localVolume ?? volume}
+            onChange={(e) => onVolume(Number(e.target.value))}
+            aria-label={`Volumen de ${name(player)}`}
+          />
+        )}
         <div className="mini-player__controls">
           <button
             type="button"
@@ -212,18 +224,6 @@ export function MusicStatusCard({ players }: { players: HassEntity[] }) {
           </button>
         </div>
       </div>
-      {volume !== null && (
-        <input
-          className="volume"
-          type="range"
-          min={0}
-          max={1}
-          step={0.02}
-          value={localVolume ?? volume}
-          onChange={(e) => onVolume(Number(e.target.value))}
-          aria-label={`Volumen de ${name(player)}`}
-        />
-      )}
     </div>
   );
 }

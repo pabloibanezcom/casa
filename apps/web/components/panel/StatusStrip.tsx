@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import { applianceStatus, domainOf, findAppliances, type ApplianceStatus, type HassEntity } from "@casa/core";
-import { useEntities, useHA } from "@casa/core/react";
+import { useCallService, useEntities, useHA } from "@casa/core/react";
 import { dayLabel, duration, time } from "@/lib/format";
+import { LockIcon, LockOpenIcon } from "./icons";
 import { MusicStatusCard, useActivePlayers } from "./Music";
 import { useNow } from "./useNow";
 
@@ -27,7 +28,7 @@ export function StatusStrip() {
     .slice(0, slots);
 
   // Each card with its column weight: music and running appliances get more room.
-  const cards: { el: ReactNode; wide: boolean }[] = [
+  const cards: { el: ReactNode; wide: boolean; fit?: boolean }[] = [
     ...(player ? [{ el: <MusicStatusCard key="music" players={players} />, wide: true }] : []),
     ...active.map(({ a, status }) => ({
       el: <ApplianceCard key={a.deviceId} name={a.name} status={status} now={now} />,
@@ -36,10 +37,10 @@ export function StatusStrip() {
     ...(active.length === 0 && !player
       ? [{ el: <div key="idle" className="card status"><span className="status__title">Electrodomésticos</span><span className="status__sub">Nada en marcha</span></div>, wide: false }]
       : []),
-    ...(lock ? [{ el: <LockCard key="lock" lock={lock} now={now} />, wide: false }] : []),
+    ...(lock ? [{ el: <LockButton key="lock" lock={lock} />, wide: false, fit: true }] : []),
   ];
 
-  const columns = cards.map((c) => (c.wide && cards.length > 1 ? "1.6fr" : "1fr")).join(" ");
+  const columns = cards.map((c) => (c.fit ? "max-content" : c.wide && cards.length > 1 ? "1.6fr" : "1fr")).join(" ");
 
   return (
     // Columns go through a CSS variable so the stylesheet can stack them on phones.
@@ -59,14 +60,14 @@ function ApplianceCard({ name, status, now }: { name: string; status: ApplianceS
       <div className="card status status--wide">
         <div className="status__head">
           <span className="status__title">{title}</span>
-          {status.finishesAt && <span className="status__sub">Termina {time(status.finishesAt)}</span>}
+          <span className="status__sub">
+            {status.paused ? "En pausa" : status.progress != null ? `${status.progress} %` : "En marcha"}
+            {left != null && left > 0 && ` · quedan ${duration(left)}`}
+            {status.finishesAt && ` · ${time(status.finishesAt)}`}
+          </span>
         </div>
         <div className="progress" role="progressbar" aria-valuenow={status.progress ?? undefined} aria-valuemin={0} aria-valuemax={100}>
           <div className="progress__bar" style={{ width: `${status.progress ?? 0}%` }} />
-        </div>
-        <div className="status__sub">
-          {status.paused ? "En pausa" : status.progress != null ? `${status.progress} %` : "En marcha"}
-          {left != null && left > 0 && ` · quedan ${duration(left)}`}
         </div>
       </div>
     );
@@ -75,8 +76,10 @@ function ApplianceCard({ name, status, now }: { name: string; status: ApplianceS
     return (
       <div className="card status">
         <span className="status__title">{name}</span>
-        <span className="status__line ok">Terminado {sinceLabel(status.at, now)}</span>
-        <span className="status__sub">Listo para vaciar</span>
+        <span className="status__line">
+          <span className="ok">Terminado {sinceLabel(status.at, now)}</span>
+          <span className="status__sub"> · listo para vaciar</span>
+        </span>
       </div>
     );
   }
@@ -88,22 +91,63 @@ function ApplianceCard({ name, status, now }: { name: string; status: ApplianceS
   );
 }
 
-function LockCard({ lock, now }: { lock: HassEntity; now: Date }) {
-  const since = new Date(lock.last_changed);
+const CONFIRM_MS = 4000;
+
+/**
+ * The front door as one button: red while locked. Tapping locks straight away;
+ * unlocking needs a second tap within a few seconds so a stray touch can't open the house.
+ */
+function LockButton({ lock }: { lock: HassEntity }) {
+  const callService = useCallService();
+  const [armed, setArmed] = useState(false);
   const state = lock.state;
-  const [label, tone] =
-    state === "locked" ? ["Cerrada con llave", "ok"]
-    : state === "unlocked" ? ["Sin llave", "warn"]
-    : state === "open" ? ["Abierta", "warn"]
-    : state === "jammed" ? ["Atascada", "warn"]
-    : state === "unavailable" ? ["Sin conexión", "warn"]
-    : [state, ""];
+  const locked = state === "locked";
+  const busy = state === "locking" || state === "unlocking" || state === "opening";
+
+  useEffect(() => {
+    if (!armed) return;
+    const id = setTimeout(() => setArmed(false), CONFIRM_MS);
+    return () => clearTimeout(id);
+  }, [armed]);
+  useEffect(() => setArmed(false), [state]);
+
+  const label =
+    armed ? "Toca para abrir"
+    : state === "locked" ? "Cerrada con llave"
+    : state === "unlocked" ? "Sin llave"
+    : state === "open" ? "Abierta"
+    : state === "locking" ? "Cerrando…"
+    : state === "unlocking" || state === "opening" ? "Abriendo…"
+    : state === "jammed" ? "Atascada"
+    : state === "unavailable" ? "Sin conexión"
+    : state;
+
+  const onClick = () => {
+    const target = { entity_id: lock.entity_id };
+    if (locked) {
+      if (!armed) return setArmed(true);
+      setArmed(false);
+      void callService("lock", "unlock", {}, target);
+    } else {
+      void callService("lock", "lock", {}, target);
+    }
+  };
+
   return (
-    <div className="card status">
-      <span className="status__title">Puerta de entrada</span>
-      <span className={`status__line ${tone}`}>{label}</span>
-      <span className="status__sub">Desde {sinceLabel(since, now, "las")}</span>
-    </div>
+    <button
+      type="button"
+      className="card status lock-btn"
+      data-state={armed ? "armed" : state}
+      disabled={state === "unavailable" || busy}
+      onClick={onClick}
+      aria-label={`Puerta: ${label}. ${locked ? "Tocar para abrir" : "Tocar para cerrar"}`}
+    >
+      <span className="lock-btn__icon">{locked ? <LockIcon /> : <LockOpenIcon />}</span>
+      <span className="lock-btn__text">
+        <span className="status__title">Puerta</span>
+        <span className="status__line">{label}</span>
+      </span>
+    </button>
   );
 }
 
