@@ -178,7 +178,8 @@ function Room({ room, entities, onToggle }: { room: RoomModel; entities: HassEnt
           <h2 className="room__name">{room.name}</h2>
           {climate && <RoomTemp entity={climate} />}
         </div>
-        <span className={`room__summary ${summary.tone ? `room__summary--${summary.tone}` : ""}`}>{summary.text}</span>
+        {/* Only problems get a line; on/off is already visible on the buttons. */}
+        {summary.tone === "warn" && <span className="room__summary room__summary--warn">{summary.text}</span>}
       </div>
       {controls.length > 0 && (
         <div className="controls">

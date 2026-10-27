@@ -214,10 +214,10 @@ h2 { margin: 0; }
 }
 @media (max-width: 1100px) { .rooms { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 599px) { .rooms { grid-template-columns: 1fr; } }
-.room { min-height: 116px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.room { padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
 .room__head { display: flex; flex-direction: column; gap: 2px; }
 .room__title { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; min-width: 0; }
-.room__name { font-size: 18px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.room__name { font-size: 17px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .room__temp { display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; font-size: 15px; color: var(--text-2); }
 .room__temp svg { align-self: center; color: var(--muted); }
 .room__temp-current { font-weight: 600; color: var(--text); }
@@ -227,12 +227,14 @@ h2 { margin: 0; }
 .room__summary--on { color: var(--accent-text); }
 .room__summary--warn { color: var(--warn); }
 .controls { display: flex; gap: 8px; flex-wrap: wrap; }
+.controls { gap: 6px; }
 .control {
-  min-height: 44px; padding: 0 12px; border-radius: var(--radius);
-  display: flex; align-items: center; gap: 8px; cursor: pointer;
+  min-height: 36px; padding: 0 10px; border-radius: var(--radius);
+  display: flex; align-items: center; gap: 6px; cursor: pointer;
   border: 1px solid var(--line); background: var(--inset); color: var(--text-2);
-  font-size: 14px; max-width: 100%;
+  font-size: 13px; max-width: 100%;
 }
+.control svg { width: 16px; height: 16px; }
 .control__text { display: block; min-width: 0; }
 .control__label { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .control__state { display: none; }
@@ -243,7 +245,6 @@ h2 { margin: 0; }
 /* Phones: tighter room cards, still 44px touch targets. */
 @media (max-width: 599px) {
   .rooms { gap: 8px; }
-  .room { min-height: 0; }
   .room { padding: 12px 14px; gap: 8px; }
   .room__name { font-size: 16px; }
   .room__summary { font-size: 13px; }
