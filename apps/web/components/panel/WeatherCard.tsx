@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { CONDITION_LABELS, domainOf } from "@casa/core";
 import { useEntities, useForecast, useHA } from "@casa/core/react";
 import { degrees } from "@/lib/format";
-import { WeatherIcon } from "./icons";
+import { FloorIcon, WeatherIcon } from "./icons";
 
 export function WeatherCard() {
   const { session } = useHA();
@@ -16,6 +16,10 @@ export function WeatherCard() {
 
   const today = daily[0];
   const nextHours = hourly.filter((h) => Date.parse(h.datetime) > Date.now()).slice(0, 4);
+  // Rain chances take a whole line, so only show them when something is actually expected.
+  const anyRain = nextHours.some((h) => (h.precipitation_probability ?? 0) > 0);
+  const todayKey = new Date().toDateString();
+  const nextDays = daily.filter((d) => new Date(d.datetime).toDateString() !== todayKey && Date.parse(d.datetime) > Date.now()).slice(0, 4);
   const temp = weather?.attributes.temperature as number | undefined;
 
   // Indoor: average current_temperature of thermostats, per floor.
@@ -47,28 +51,27 @@ export function WeatherCard() {
 
   return (
     <section aria-label="Tiempo" className="card weather">
-      <div className="weather__now">
-        <WeatherIcon condition={weather?.state ?? "cloudy"} />
-        <div>
+      <div className="weather__top">
+        <div className="weather__now">
           <div className="eyebrow">Exterior</div>
-          <div className="weather__temp display num">{temp != null ? degrees(temp) : "—"}</div>
+          <div className="weather__main">
+            <WeatherIcon condition={weather?.state ?? "cloudy"} />
+            <span className="weather__temp display num">{temp != null ? degrees(temp) : "—"}</span>
+          </div>
           <div className="weather__desc">
             {weather ? CONDITION_LABELS[weather.state] ?? weather.state : "Sin datos"}
-            {today?.temperature != null && today.templow != null && ` · ${degrees(today.temperature)} / ${degrees(today.templow)}`}
+            {today?.temperature != null && today.templow != null && ` · ${Math.round(today.temperature)}/${Math.round(today.templow)}°`}
           </div>
         </div>
-      </div>
-
-      <div className="floors-temp">
-        {floors.map((f) => (
-          <div key={f.id} className="floor-temp">
-            <span className="eyebrow">{f.name}</span>
-            <span className="floor-temp__value display num">{f.value != null ? degrees(f.value, 1) : "—"}</span>
-            <span className="floor-temp__note">
-              {f.count ? `Media de ${f.count} ${f.count === 1 ? "estancia" : "estancias"}` : "Sin datos"}
-            </span>
-          </div>
-        ))}
+        <div className="indoor" aria-label="Interior">
+          {floors.map((f, i) => (
+            <div key={f.id} className="indoor__row" title={f.count ? `Media de ${f.count} ${f.count === 1 ? "estancia" : "estancias"}` : undefined}>
+              <FloorIcon storey={i} size={16} />
+              <span className="indoor__name">{f.name}</span>
+              <span className="indoor__value num">{f.value != null ? degrees(f.value, 1) : "—"}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
       {nextHours.length > 0 && (
@@ -77,7 +80,24 @@ export function WeatherCard() {
             <div key={h.datetime} className="hour">
               <span className="hour__t">{new Date(h.datetime).getHours()} h</span>
               <span className="hour__temp display num">{h.temperature != null ? degrees(h.temperature) : "—"}</span>
-              <span className="hour__rain">{h.precipitation_probability != null ? `${h.precipitation_probability} %` : " "}</span>
+              {anyRain && <span className="hour__rain">{h.precipitation_probability != null ? `${h.precipitation_probability} %` : " "}</span>}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {nextDays.length > 0 && (
+        <div className="hours days">
+          {nextDays.map((d) => (
+            <div key={d.datetime} className="hour">
+              <span className="day__head">
+                <span className="hour__t">{new Date(d.datetime).toLocaleDateString("es-ES", { weekday: "short" }).replace(".", "")}</span>
+                <WeatherIcon condition={d.condition ?? "cloudy"} size={18} />
+              </span>
+              <span className="day__temps num">
+                <span className="day__high">{d.temperature != null ? degrees(d.temperature) : "—"}</span>
+                {d.templow != null && <span className="day__low">{degrees(d.templow)}</span>}
+              </span>
             </div>
           ))}
         </div>
