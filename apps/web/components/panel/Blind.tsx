@@ -13,11 +13,29 @@ const PRESETS = [0, 25, 50, 75, 100];
 
 const has = (e: HassEntity, bit: number) => (Number(e.attributes.supported_features ?? 0) & bit) !== 0;
 
-/** How open the blind is, 0–100. Falls back to open/closed when it doesn't report a position. */
-export function blindPosition(e: HassEntity): number {
+/**
+ * How open the blind is, 0–100. Falls back to open/closed when it doesn't report a position.
+ * Some devices (Tuya curtain switches, for one) report it the wrong way round, so it can be inverted per blind.
+ */
+export function blindPosition(e: HassEntity, inverted = false): number {
   const p = e.attributes.current_position;
-  if (typeof p === "number" && Number.isFinite(p)) return Math.max(0, Math.min(100, Math.round(p)));
-  return e.state === "closed" ? 0 : 100;
+  const raw = typeof p === "number" && Number.isFinite(p) ? Math.max(0, Math.min(100, Math.round(p))) : e.state === "closed" ? 0 : 100;
+  return inverted ? 100 - raw : raw;
+}
+
+const invertKey = (id: string) => `casa.blind.inverted.${id}`;
+function useInverted(entityId: string) {
+  const [inverted, setInverted] = useState(false);
+  useEffect(() => {
+    try { setInverted(localStorage.getItem(invertKey(entityId)) === "1"); } catch { /* storage unavailable */ }
+  }, [entityId]);
+  const toggle = () => {
+    setInverted((v) => {
+      try { localStorage.setItem(invertKey(entityId), v ? "0" : "1"); } catch { /* storage unavailable */ }
+      return !v;
+    });
+  };
+  return [inverted, toggle] as const;
 }
 
 function statusText(e: HassEntity, position: number) {
@@ -30,9 +48,11 @@ function statusText(e: HassEntity, position: number) {
 }
 
 /** The room-card pill for a blind: the fill shows how open it is, tapping opens the full control. */
-export function BlindPill({ entity, label, state }: { entity: HassEntity; label: string; state: string }) {
+export function BlindPill({ entity, label }: { entity: HassEntity; label: string }) {
   const [open, setOpen] = useState(false);
-  const position = blindPosition(entity);
+  const [inverted, toggleInverted] = useInverted(entity.entity_id);
+  const position = blindPosition(entity, inverted);
+  const state = statusText(entity, position);
   const unavailable = entity.state === "unavailable";
   const partial = position > 0 && position < 100;
 
@@ -56,12 +76,14 @@ export function BlindPill({ entity, label, state }: { entity: HassEntity; label:
         </span>
         {partial && <span className="control__value num" aria-hidden="true">{position}%</span>}
       </button>
-      {open && <BlindDialog entity={entity} label={label} onClose={() => setOpen(false)} />}
+      {open && <BlindDialog entity={entity} label={label} inverted={inverted} onToggleInverted={toggleInverted} onClose={() => setOpen(false)} />}
     </>
   );
 }
 
-function BlindDialog({ entity, label, onClose }: { entity: HassEntity; label: string; onClose: () => void }) {
+function BlindDialog({ entity, label, inverted, onToggleInverted, onClose }: {
+  entity: HassEntity; label: string; inverted: boolean; onToggleInverted: () => void; onClose: () => void;
+}) {
   const callService = useCallService();
   const ref = useRef<HTMLDialogElement>(null);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -71,7 +93,7 @@ function BlindDialog({ entity, label, onClose }: { entity: HassEntity; label: st
   const canSet = has(entity, SET_POSITION);
   const canStop = has(entity, STOP);
   const moving = entity.state === "opening" || entity.state === "closing";
-  const value = draft ?? blindPosition(entity);
+  const value = draft ?? blindPosition(entity, inverted);
 
   useEffect(() => {
     ref.current?.showModal();
@@ -92,7 +114,7 @@ function BlindDialog({ entity, label, onClose }: { entity: HassEntity; label: st
   const commit = (v: number) => {
     clearTimeout(timer.current);
     setDraft(v);
-    void callService("cover", "set_cover_position", { position: v }, target);
+    void callService("cover", "set_cover_position", { position: inverted ? 100 - v : v }, target);
   };
   const slide = (v: number) => {
     setDraft(v);
@@ -164,6 +186,16 @@ function BlindDialog({ entity, label, onClose }: { entity: HassEntity; label: st
           {(canStop || !canSet) && <ActionButton icon={<StopIcon />} label="Parar" onClick={() => run("stop_cover")} />}
           <ActionButton icon={<ChevronDownIcon />} label="Cerrar" onClick={() => run("close_cover")} />
         </div>
+
+        {canSet && (
+          <label className="blind__invert">
+            <input type="checkbox" checked={inverted} onChange={() => { setDraft(null); onToggleInverted(); }} />
+            <span>
+              Invertir posición
+              <small>Actívalo si la persiana abierta aparece como cerrada.</small>
+            </span>
+          </label>
+        )}
       </div>
     </dialog>
   );

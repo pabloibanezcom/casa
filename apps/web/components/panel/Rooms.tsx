@@ -253,7 +253,7 @@ function Control({ entity, label, onToggle }: { entity: HassEntity; label: strin
     : entity.attributes.device_class === "outlet" ? PlugIcon
     : BulbIcon;
   const state = stateText(entity, domain, on);
-  if (domain === "cover") return <BlindPill entity={entity} label={label} state={state} />;
+  if (domain === "cover") return <BlindPill entity={entity} label={label} />;
   return (
     <LevelPill
       entity={entity}

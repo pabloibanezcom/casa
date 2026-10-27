@@ -548,3 +548,6 @@ h2 { margin: 0; }
 .blind__action:active, .blind__preset:active { transform: scale(0.98); }
 @media (max-width: 599px) { .blind__body { grid-template-columns: 88px minmax(0, 1fr); gap: 14px; } .blind__preview { height: 112px; } }
 @media (prefers-reduced-motion: reduce) { .blind[open] { animation: none; } .blind__slats { transition: none; } }
+.blind__invert { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; cursor: pointer; padding-top: 12px; border-top: 1px solid var(--line); }
+.blind__invert input { margin: 3px 0 0; width: 18px; height: 18px; accent-color: var(--accent); flex-shrink: 0; }
+.blind__invert small { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
