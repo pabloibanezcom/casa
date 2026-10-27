@@ -15,6 +15,14 @@ const TAB_KEY = "casa.panel.floor";
 const CLIMATE_TAB = "__climate";
 const MUSIC_TAB = "__music";
 
+const norm = (v: string) => v.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+/** Rooms to list first, in this order, e.g. NEXT_PUBLIC_ROOM_ORDER="Salón,Pasillo bajo". The rest follow alphabetically. */
+const ROOM_ORDER = (process.env.NEXT_PUBLIC_ROOM_ORDER ?? "").split(",").map(norm).filter(Boolean);
+const roomRank = (name: string) => {
+  const i = ROOM_ORDER.indexOf(norm(name));
+  return i === -1 ? ROOM_ORDER.length : i;
+};
+
 interface RoomModel {
   id: string;
   name: string;
@@ -44,7 +52,7 @@ export function Rooms() {
         ...f,
         rooms: registries.areas
           .filter((a) => (a.floor_id ?? "") === f.id && byArea.has(a.area_id))
-          .sort((a, b) => a.name.localeCompare(b.name, "es"))
+          .sort((a, b) => roomRank(a.name) - roomRank(b.name) || a.name.localeCompare(b.name, "es"))
           .map<RoomModel>((a) => ({
             id: a.area_id,
             name: a.name,
@@ -153,9 +161,11 @@ export function Rooms() {
         <Climate key="climate" />
       ) : (
         <section key={floor.id} role="tabpanel" aria-label={`Estancias · ${floor.name}`} className="rooms">
-          {floor.rooms.map((room) => (
-            <Room key={room.id} room={room} entities={entities} onToggle={(e) => void toggle(e)} />
-          ))}
+          <div className="rooms__cols">
+            {floor.rooms.map((room) => (
+              <Room key={room.id} room={room} entities={entities} onToggle={(e) => void toggle(e)} />
+            ))}
+          </div>
         </section>
       )}
     </>
