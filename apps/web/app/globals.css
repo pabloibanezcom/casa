@@ -119,15 +119,17 @@ h2 { margin: 0; }
 
 /* Weather */
 .weather { display: flex; flex-direction: column; gap: 12px; padding: 14px 16px; }
-.weather__top { display: grid; grid-template-columns: 1.35fr 1fr 1fr; gap: 8px; align-items: stretch; }
+.weather__top { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; align-items: stretch; }
 .weather__now { display: flex; flex-direction: column; justify-content: center; gap: 2px; min-width: 0; }
 .weather__main { display: flex; align-items: center; gap: 8px; }
 .weather__main svg { width: 28px; height: 28px; flex-shrink: 0; }
 .weather__temp { font-size: 32px; line-height: 1; }
 .weather__desc { color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.floor-temp { background: var(--inset); border-radius: var(--radius); padding: 8px 10px; display: flex; flex-direction: column; justify-content: center; gap: 2px; min-width: 0; }
-.floor-temp .eyebrow { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.floor-temp__value { font-size: 22px; line-height: 1.15; }
+.indoor { display: flex; flex-direction: column; justify-content: center; gap: 8px; min-width: 0; padding-left: 14px; border-left: 1px solid var(--line); }
+.indoor__row { display: flex; align-items: center; gap: 8px; min-width: 0; color: var(--muted); }
+.indoor__row svg { flex-shrink: 0; }
+.indoor__name { flex: 1; min-width: 0; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.indoor__value { font-size: 18px; font-weight: 500; color: var(--text); }
 .hours { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; border-top: 1px solid var(--line); padding-top: 10px; }
 .hour { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .hour__t { font-size: 13px; color: var(--muted); }

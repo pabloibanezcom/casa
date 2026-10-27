@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { CONDITION_LABELS, domainOf } from "@casa/core";
 import { useEntities, useForecast, useHA } from "@casa/core/react";
 import { degrees } from "@/lib/format";
-import { WeatherIcon } from "./icons";
+import { FloorIcon, WeatherIcon } from "./icons";
 
 export function WeatherCard() {
   const { session } = useHA();
@@ -59,12 +59,15 @@ export function WeatherCard() {
             {today?.temperature != null && today.templow != null && ` · ${Math.round(today.temperature)}/${Math.round(today.templow)}°`}
           </div>
         </div>
-        {floors.map((f) => (
-          <div key={f.id} className="floor-temp" title={f.count ? `Media de ${f.count} ${f.count === 1 ? "estancia" : "estancias"}` : undefined}>
-            <span className="eyebrow">{f.name.replace(/^planta\s+/i, "")}</span>
-            <span className="floor-temp__value display num">{f.value != null ? degrees(f.value, 1) : "—"}</span>
-          </div>
-        ))}
+        <div className="indoor" aria-label="Interior">
+          {floors.map((f) => (
+            <div key={f.id} className="indoor__row" title={f.count ? `Media de ${f.count} ${f.count === 1 ? "estancia" : "estancias"}` : undefined}>
+              <FloorIcon size={16} />
+              <span className="indoor__name">{f.name}</span>
+              <span className="indoor__value num">{f.value != null ? degrees(f.value, 1) : "—"}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
       {nextHours.length > 0 && (
