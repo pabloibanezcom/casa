@@ -7,21 +7,28 @@ import { CameraIcon, CloseIcon } from "./icons";
 
 const SNAPSHOT_EVERY = 8_000;
 
+/** Tapo exposes one entity per stream quality ("… HD stream" / "… SD stream"). Only the HD ones are wanted. */
+const isSd = (e: HassEntity) => /(^|[\s_.])sd([\s_.]|$)/i.test(`${e.entity_id} ${e.attributes.friendly_name ?? ""}`);
+
 export function useCameras(): HassEntity[] {
   const entities = useEntities();
   return useMemo(
     () =>
       Object.values(entities)
-        .filter((e) => domainOf(e.entity_id) === "camera")
+        .filter((e) => domainOf(e.entity_id) === "camera" && !isSd(e))
         .sort((a, b) => cameraName(a).localeCompare(cameraName(b), "es")),
     [entities],
   );
 }
 
-/** "Camara_Andres" → "Andres", "Camara Jardin" → "Jardín"-style short names. */
+/** "Camara_Andres HD stream" → "Andres". */
 export function cameraName(e: HassEntity) {
   const full = String(e.attributes.friendly_name ?? e.entity_id).replace(/_/g, " ").trim();
-  const short = full.replace(/^c[aá]mara\s+/i, "").trim();
+  const short = full
+    .replace(/\b(hd|stream|streaming)\b/gi, " ")
+    .replace(/^c[aá]mara\s+/i, "")
+    .replace(/\s+/g, " ")
+    .trim();
   const name = short || full;
   return name.charAt(0).toUpperCase() + name.slice(1);
 }
