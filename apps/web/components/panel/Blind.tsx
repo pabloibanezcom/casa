@@ -24,27 +24,23 @@ export function blindPosition(e: HassEntity, inverted = false): number {
 }
 
 const invertKey = (id: string) => `casa.blind.inverted.${id}`;
+/** Blinds that report their position backwards, e.g. NEXT_PUBLIC_INVERTED_COVERS="cover.salon". The switch in the panel overrides it per device. */
+const INVERTED_DEFAULT = new Set((process.env.NEXT_PUBLIC_INVERTED_COVERS ?? "").split(",").map((v) => v.trim()).filter(Boolean));
 function useInverted(entityId: string) {
-  const [inverted, setInverted] = useState(false);
+  const fallback = INVERTED_DEFAULT.has(entityId);
+  const [inverted, setInverted] = useState(fallback);
   useEffect(() => {
-    try { setInverted(localStorage.getItem(invertKey(entityId)) === "1"); } catch { /* storage unavailable */ }
-  }, [entityId]);
+    try {
+      const saved = localStorage.getItem(invertKey(entityId));
+      setInverted(saved === null ? fallback : saved === "1");
+    } catch { /* storage unavailable */ }
+  }, [entityId, fallback]);
   const toggle = () => {
-    setInverted((v) => {
-      try { localStorage.setItem(invertKey(entityId), v ? "0" : "1"); } catch { /* storage unavailable */ }
-      return !v;
-    });
+    const next = !inverted;
+    try { localStorage.setItem(invertKey(entityId), next ? "1" : "0"); } catch { /* storage unavailable */ }
+    setInverted(next);
   };
   return [inverted, toggle] as const;
-}
-
-function statusText(e: HassEntity, position: number) {
-  if (e.state === "unavailable") return "Sin conexión";
-  if (e.state === "opening") return "Abriendo…";
-  if (e.state === "closing") return "Cerrando…";
-  if (position === 0) return "Cerrada";
-  if (position === 100) return "Abierta";
-  return `Abierta al ${position} %`;
 }
 
 /** The room-card pill for a blind: the fill shows how open it is, tapping opens the full control. */
