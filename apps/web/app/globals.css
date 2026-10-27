@@ -80,7 +80,7 @@ h2 { margin: 0; }
   background: var(--bg);
   color: var(--text);
 }
-.panel__aside { width: 352px; flex-shrink: 0; display: flex; flex-direction: column; gap: 20px; }
+.panel__aside { width: 352px; flex-shrink: 0; display: flex; flex-direction: column; gap: 14px; }
 .panel__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 20px; }
 
 @media (min-width: 900px) {
@@ -101,11 +101,11 @@ h2 { margin: 0; }
 
 /* Clock */
 .clock { display: flex; flex-direction: column; gap: 2px; padding: 4px 4px 0; }
-.clock__time { font-weight: 300; font-size: 88px; line-height: 1; letter-spacing: -0.03em; }
-.clock__date { font-size: 18px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+.clock__time { font-weight: 300; font-size: 64px; line-height: 1; letter-spacing: -0.03em; }
+.clock__date { font-size: 16px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
 .clock__row { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
 .theme-btn {
-  width: 44px; height: 44px; border-radius: var(--radius); flex-shrink: 0;
+  width: 40px; height: 40px; border-radius: var(--radius); flex-shrink: 0;
   display: grid; place-items: center; cursor: pointer;
   border: 1px solid var(--line); background: transparent; color: var(--muted);
 }
@@ -118,22 +118,23 @@ h2 { margin: 0; }
 .conn-dot[data-status="error"] { background: var(--warn); }
 
 /* Weather */
-.weather { display: flex; flex-direction: column; gap: 16px; }
-.weather__now { display: flex; align-items: center; gap: 16px; }
-.weather__temp { font-size: 44px; line-height: 1; }
-.weather__desc { color: var(--muted); font-size: 15px; }
+.weather { display: flex; flex-direction: column; gap: 12px; padding: 14px 16px; }
+.weather__now { display: flex; align-items: center; gap: 12px; }
+.weather__now svg { width: 40px; height: 40px; }
+.weather__temp { font-size: 34px; line-height: 1; }
+.weather__desc { color: var(--muted); font-size: 14px; }
 .floors-temp { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-.floor-temp { background: var(--inset); border-radius: var(--radius); padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; }
-.floor-temp__value { font-size: 28px; line-height: 1.1; }
-.floor-temp__note { font-size: 13px; color: var(--muted); }
-.hours { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; border-top: 1px solid var(--line); padding-top: 14px; }
-.hour { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.floor-temp { background: var(--inset); border-radius: var(--radius); padding: 8px 12px; display: flex; flex-direction: column; gap: 0; min-width: 0; }
+.floor-temp__value { font-size: 22px; line-height: 1.15; }
+.floor-temp__note { display: none; }
+.hours { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; border-top: 1px solid var(--line); padding-top: 10px; }
+.hour { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .hour__t { font-size: 13px; color: var(--muted); }
-.hour__temp { font-size: 20px; }
+.hour__temp { font-size: 17px; }
 .hour__rain { font-size: 12px; color: var(--info); }
 
 /* Agenda */
-.agenda { display: flex; flex-direction: column; gap: 14px; flex: 1; min-height: 0; overflow: hidden; }
+.agenda { display: flex; flex-direction: column; gap: 10px; flex: 1; min-height: 0; overflow: hidden; padding: 14px 16px; }
 .agenda__day { margin-top: 6px; }
 .agenda__day:first-child { margin-top: 0; }
 .event { display: flex; gap: 12px; align-items: baseline; }
@@ -361,12 +362,12 @@ h2 { margin: 0; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* House mode */
-.house-mode { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.house-mode { padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
 .house-mode__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .house-mode__options { display: grid; grid-template-columns: repeat(auto-fit, minmax(56px, 1fr)); gap: 6px; }
 .mode {
-  min-height: 60px; padding: 8px 4px; border: 1px solid var(--line); border-radius: var(--radius);
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  min-height: 52px; padding: 6px 2px; border: 1px solid var(--line); border-radius: var(--radius);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
   background: var(--inset); color: var(--text-2); font-size: 11px; cursor: pointer;
 }
 .mode svg { color: var(--muted); }
