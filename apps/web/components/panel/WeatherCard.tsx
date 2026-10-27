@@ -16,6 +16,8 @@ export function WeatherCard() {
 
   const today = daily[0];
   const nextHours = hourly.filter((h) => Date.parse(h.datetime) > Date.now()).slice(0, 4);
+  const todayKey = new Date().toDateString();
+  const nextDays = daily.filter((d) => new Date(d.datetime).toDateString() !== todayKey && Date.parse(d.datetime) > Date.now()).slice(0, 4);
   const temp = weather?.attributes.temperature as number | undefined;
 
   // Indoor: average current_temperature of thermostats, per floor.
@@ -77,6 +79,21 @@ export function WeatherCard() {
               <span className="hour__t">{new Date(h.datetime).getHours()} h</span>
               <span className="hour__temp display num">{h.temperature != null ? degrees(h.temperature) : "—"}</span>
               <span className="hour__rain">{h.precipitation_probability != null ? `${h.precipitation_probability} %` : " "}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {nextDays.length > 0 && (
+        <div className="hours days">
+          {nextDays.map((d) => (
+            <div key={d.datetime} className="hour">
+              <span className="hour__t">{new Date(d.datetime).toLocaleDateString("es-ES", { weekday: "short" }).replace(".", "")}</span>
+              <WeatherIcon condition={d.condition ?? "cloudy"} size={22} />
+              <span className="day__temps num">
+                <span className="day__high">{d.temperature != null ? degrees(d.temperature) : "—"}</span>
+                {d.templow != null && <span className="day__low">{degrees(d.templow)}</span>}
+              </span>
             </div>
           ))}
         </div>

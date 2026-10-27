@@ -134,6 +134,11 @@ h2 { margin: 0; }
 .hour { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .hour__t { font-size: 13px; color: var(--muted); }
 .hour__temp { font-size: 17px; }
+.hours.days { padding-top: 8px; border-top: 1px dashed var(--line); }
+.days .hour { gap: 3px; }
+.day__temps { display: flex; gap: 5px; align-items: baseline; font-size: 15px; }
+.day__high { font-weight: 500; }
+.day__low { color: var(--muted); font-size: 13px; }
 .hour__rain { font-size: 12px; color: var(--info); }
 
 /* Agenda */
