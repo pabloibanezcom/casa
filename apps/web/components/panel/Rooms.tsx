@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEven
 import { domainOf, type HassEntities, type HassEntity } from "@casa/core";
 import { useCallService, useEntities, useHA } from "@casa/core/react";
 import { degrees } from "@/lib/format";
+import { BlindPill } from "./Blind";
 import { Climate, useClimateSystem } from "./Climate";
 import { Music, useMusicAssistant } from "./Music";
 import { BlindIcon, BulbIcon, FanIcon, FlameIcon, FloorIcon, GardenIcon, MusicIcon, PlugIcon, TempIcon, TvIcon } from "./icons";
@@ -252,6 +253,7 @@ function Control({ entity, label, onToggle }: { entity: HassEntity; label: strin
     : entity.attributes.device_class === "outlet" ? PlugIcon
     : BulbIcon;
   const state = stateText(entity, domain, on);
+  if (domain === "cover") return <BlindPill entity={entity} label={label} state={state} />;
   return (
     <LevelPill
       entity={entity}

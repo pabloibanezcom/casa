@@ -30,6 +30,19 @@ export const LockOpenIcon = ({ size = 20 }: P) => (
   <svg {...base(size)}><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 7.5-2" /></svg>
 );
 
+export const ChevronUpIcon = ({ size = 20 }: P) => (
+  <svg {...base(size)}><path d="m6 15 6-6 6 6" /></svg>
+);
+export const ChevronDownIcon = ({ size = 20 }: P) => (
+  <svg {...base(size)}><path d="m6 9 6 6 6-6" /></svg>
+);
+export const StopIcon = ({ size = 20 }: P) => (
+  <svg {...base(size)}><rect x="6.5" y="6.5" width="11" height="11" rx="2" /></svg>
+);
+export const CloseIcon = ({ size = 20 }: P) => (
+  <svg {...base(size)}><path d="M6 6l12 12M18 6 6 18" /></svg>
+);
+
 export const SunIcon = ({ size = 20 }: P) => (
   <svg {...base(size)}><circle cx="12" cy="12" r="4" /><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4" /></svg>
 );
