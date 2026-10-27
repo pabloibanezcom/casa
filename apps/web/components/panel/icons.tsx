@@ -30,6 +30,9 @@ export const LockOpenIcon = ({ size = 20 }: P) => (
   <svg {...base(size)}><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 7.5-2" /></svg>
 );
 
+export const CameraIcon = ({ size = 20 }: P) => (
+  <svg {...base(size)}><path d="M4 8a2 2 0 0 1 2-2h1.5l1.2-1.6h6.6L16.5 6H18a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8z" /><circle cx="12" cy="12.5" r="3.2" /></svg>
+);
 export const ChevronUpIcon = ({ size = 20 }: P) => (
   <svg {...base(size)}><path d="m6 15 6-6 6 6" /></svg>
 );

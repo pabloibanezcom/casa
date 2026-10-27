@@ -5,9 +5,10 @@ import { domainOf, type HassEntities, type HassEntity } from "@casa/core";
 import { useCallService, useEntities, useHA } from "@casa/core/react";
 import { degrees } from "@/lib/format";
 import { BlindPill } from "./Blind";
+import { Cameras, useCameras } from "./Cameras";
 import { Climate, useClimateSystem } from "./Climate";
 import { Music, useMusicAssistant } from "./Music";
-import { BlindIcon, BulbIcon, FanIcon, FlameIcon, FloorIcon, GardenIcon, MusicIcon, PlugIcon, TempIcon, TvIcon } from "./icons";
+import { BlindIcon, BulbIcon, CameraIcon, FanIcon, FlameIcon, FloorIcon, GardenIcon, MusicIcon, PlugIcon, TempIcon, TvIcon } from "./icons";
 
 const ORDER = ["light", "switch", "cover", "fan", "climate", "media_player"];
 /** Integrations whose switches are settings, not room controls. */
@@ -15,6 +16,7 @@ const EXCLUDED_PLATFORMS = new Set(["home_connect", "tapo_control", "eufy_securi
 const TAB_KEY = "casa.panel.floor";
 const CLIMATE_TAB = "__climate";
 const MUSIC_TAB = "__music";
+const CAMERAS_TAB = "__cameras";
 
 const norm = (v: string) => v.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
 /** Rooms to list first, in this order, e.g. NEXT_PUBLIC_ROOM_ORDER="Salón,Pasillo bajo". The rest follow alphabetically. */
@@ -72,8 +74,10 @@ export function Rooms() {
   const music = useMusicAssistant();
   const hasMusic = !!music;
   const showMusic = hasMusic && selected === MUSIC_TAB;
+  const hasCameras = useCameras().length > 0;
+  const showCameras = hasCameras && selected === CAMERAS_TAB;
   const floor = floors.find((f) => f.id === selected) ?? floors[0];
-  const activeKey = showMusic ? MUSIC_TAB : showClimate ? CLIMATE_TAB : floor?.id;
+  const activeKey = showCameras ? CAMERAS_TAB : showMusic ? MUSIC_TAB : showClimate ? CLIMATE_TAB : floor?.id;
   const tablistRef = useRef<HTMLDivElement>(null);
 
   // Keep the selected segment in view when the bar scrolls sideways (phones).
@@ -116,7 +120,7 @@ export function Rooms() {
     return callService("homeassistant", "toggle", {}, target);
   };
 
-  if (!floor && !hasClimate && !hasMusic) return <p className="empty">No hay estancias con dispositivos. Revisa las áreas en Home Assistant.</p>;
+  if (!floor && !hasClimate && !hasMusic && !hasCameras) return <p className="empty">No hay estancias con dispositivos. Revisa las áreas en Home Assistant.</p>;
 
   return (
     <>
@@ -130,7 +134,7 @@ export function Rooms() {
             />
           )}
           {floors.map((f, i) => (
-            <button key={f.id} role="tab" type="button" className="tab" aria-selected={!showClimate && !showMusic && f.id === floor?.id} onClick={() => select(f.id)}>
+            <button key={f.id} role="tab" type="button" className="tab" aria-selected={!showClimate && !showMusic && !showCameras && f.id === floor?.id} onClick={() => select(f.id)}>
               {f.id ? <FloorIcon storey={i} /> : <GardenIcon />}
               <span>{f.name}</span>
             </button>
@@ -153,10 +157,21 @@ export function Rooms() {
               </button>
             </>
           )}
+          {hasCameras && (
+            <>
+              {!hasClimate && !hasMusic && <span className="tabs__divider" aria-hidden="true" />}
+              <button role="tab" type="button" className="tab" aria-selected={showCameras} onClick={() => select(CAMERAS_TAB)}>
+                <CameraIcon size={20} />
+                <span>Cámaras</span>
+              </button>
+            </>
+          )}
         </div>
       </div>
 
-      {showMusic ? (
+      {showCameras ? (
+        <Cameras key="cameras" />
+      ) : showMusic ? (
         <Music key="music" />
       ) : showClimate || !floor ? (
         <Climate key="climate" />
