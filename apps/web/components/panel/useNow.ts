@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
 /** Current time, re-rendering on each minute boundary. */
 export function useNow() {
@@ -14,4 +14,11 @@ export function useNow() {
     return () => clearTimeout(timer);
   }, []);
   return now;
+}
+
+const noop = () => () => {};
+
+/** False during SSR and hydration, true afterwards. Use it to keep build-time text (like the date) off screen. */
+export function useHydrated() {
+  return useSyncExternalStore(noop, () => true, () => false);
 }

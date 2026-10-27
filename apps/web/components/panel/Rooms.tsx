@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent, type ReactNode } from "react";
 import { domainOf, type HassEntities, type HassEntity } from "@casa/core";
 import { useCallService, useEntities, useHA } from "@casa/core/react";
 import { degrees } from "@/lib/format";
@@ -178,7 +178,8 @@ function Room({ room, entities, onToggle }: { room: RoomModel; entities: HassEnt
           <h2 className="room__name">{room.name}</h2>
           {climate && <RoomTemp entity={climate} />}
         </div>
-        <span className={`room__summary ${summary.tone ? `room__summary--${summary.tone}` : ""}`}>{summary.text}</span>
+        {/* Only problems get a line; on/off is already visible on the buttons. */}
+        {summary.tone === "warn" && <span className="room__summary room__summary--warn">{summary.text}</span>}
       </div>
       {controls.length > 0 && (
         <div className="controls">
@@ -242,21 +243,117 @@ function Control({ entity, label, onToggle }: { entity: HassEntity; label: strin
     : BulbIcon;
   const state = stateText(entity, domain, on);
   return (
+    <LevelPill
+      entity={entity}
+      domain={domain}
+      on={on}
+      label={label}
+      state={state}
+      icon={<Icon />}
+      disabled={unavailable}
+      onToggle={onToggle}
+    />
+  );
+}
+
+/** Brightness 0–100 for a light that can dim, or null for on/off-only lights. */
+function brightnessPct(e: HassEntity): number | null {
+  const modes = e.attributes.supported_color_modes as string[] | undefined;
+  if (!modes || modes.every((m) => m === "onoff")) return null;
+  const b = pct(e.attributes.brightness);
+  return e.state === "on" && b !== null ? Math.max(1, Math.round((b / 255) * 100)) : 0;
+}
+
+const DRAG_THRESHOLD = 6;
+
+/**
+ * A pill whose green fill shows how "on" something is. Tap toggles; on dimmable lights,
+ * dragging sideways sets the brightness (release near the left edge to switch off).
+ */
+function LevelPill({ entity, domain, on, label, state, icon, disabled, onToggle }: {
+  entity: HassEntity; domain: string; on: boolean; label: string; state: string;
+  icon: ReactNode; disabled: boolean; onToggle: () => void;
+}) {
+  const callService = useCallService();
+  const dimmable = domain === "light" ? brightnessPct(entity) : null;
+  const [drag, setDrag] = useState<number | null>(null);
+  const [pending, setPending] = useState<number | null>(null);
+  const start = useRef<{ x: number; moved: boolean } | null>(null);
+  const justDragged = useRef(false);
+
+  // Drop the optimistic value as soon as HA reports the new state.
+  useEffect(() => setPending(null), [entity.state, entity.attributes.brightness]);
+
+  const level =
+    drag ?? pending ?? (dimmable !== null ? dimmable
+      : domain === "cover" && on ? pct(entity.attributes.current_position) ?? 100
+      : on ? 100 : 0);
+  const lit = level > 0;
+
+  const fromPointer = (el: HTMLElement, x: number) => {
+    const r = el.getBoundingClientRect();
+    return Math.max(0, Math.min(100, Math.round(((x - r.left) / r.width) * 100)));
+  };
+
+  const onPointerDown = (e: PointerEvent<HTMLButtonElement>) => {
+    if (disabled || dimmable === null) return;
+    start.current = { x: e.clientX, moved: false };
+  };
+  const onPointerMove = (e: PointerEvent<HTMLButtonElement>) => {
+    const s = start.current;
+    if (!s) return;
+    if (!s.moved && Math.abs(e.clientX - s.x) < DRAG_THRESHOLD) return;
+    if (!s.moved) {
+      s.moved = true;
+      e.currentTarget.setPointerCapture(e.pointerId);
+    }
+    setDrag(fromPointer(e.currentTarget, e.clientX));
+  };
+  const onPointerEnd = () => {
+    const s = start.current;
+    start.current = null;
+    if (!s?.moved || drag === null) return;
+    justDragged.current = true;
+    const value = drag < 3 ? 0 : drag;
+    setDrag(null);
+    setPending(value);
+    const target = { entity_id: entity.entity_id };
+    void (value === 0
+      ? callService("light", "turn_off", {}, target)
+      : callService("light", "turn_on", { brightness_pct: value }, target));
+  };
+  const onClick = () => {
+    // A drag ends with a click event too; only plain taps toggle.
+    if (justDragged.current) {
+      justDragged.current = false;
+      return;
+    }
+    onToggle();
+  };
+
+  return (
     <button
       type="button"
-      className="control"
-      aria-pressed={on}
-      disabled={unavailable}
-      onClick={onToggle}
+      className={`control${drag !== null ? " control--dragging" : ""}`}
+      aria-pressed={lit}
+      disabled={disabled}
+      onClick={onClick}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerEnd}
+      onPointerCancel={() => { start.current = null; setDrag(null); }}
       title={entity.attributes.friendly_name}
       aria-label={`${label}: ${state}`}
+      data-dimmable={dimmable !== null || undefined}
     >
-      <Icon />
+      <span className="control__fill" style={{ width: `${level}%` }} aria-hidden="true" />
+      {icon}
       <span className="control__text">
         <span className="control__label">{label}</span>
         {/* Only shown on phones, where controls become tiles. */}
-        <span className="control__state" aria-hidden="true">{state}</span>
+        <span className="control__state" aria-hidden="true">{drag !== null ? `${drag} %` : state}</span>
       </span>
+      {dimmable !== null && lit && <span className="control__value num" aria-hidden="true">{level}%</span>}
     </button>
   );
 }
@@ -327,6 +424,8 @@ function shortName(e: HassEntity, areaName: string) {
   const full = String(e.attributes.friendly_name ?? e.entity_id);
   const words = areaName.toLowerCase().split(/\s+/);
   const kept = full.split(/\s+/).filter((w) => !words.includes(w.toLowerCase()));
+  // The icon already says it's a light or a switch, so "Luz escalera B" reads as "Escalera B".
+  if (kept.length > 1 && /^(luz|luces|interruptor)$/i.test(kept[0]!)) kept.shift();
   const short = kept.join(" ").trim();
   return short ? capitalize(short) : full;
 }

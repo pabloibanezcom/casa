@@ -204,7 +204,8 @@ h2 { margin: 0; }
 .rooms {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  grid-auto-rows: minmax(116px, auto);
+  /* max-content, not auto: in a height-capped scroller auto rows get squeezed and cards overlap. */
+  grid-auto-rows: max-content;
   align-content: start;
   gap: 10px;
   flex: 1;
@@ -213,10 +214,10 @@ h2 { margin: 0; }
 }
 @media (max-width: 1100px) { .rooms { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 599px) { .rooms { grid-template-columns: 1fr; } }
-.room { padding: 14px 16px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px; min-width: 0; }
+.room { padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
 .room__head { display: flex; flex-direction: column; gap: 2px; }
 .room__title { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; min-width: 0; }
-.room__name { font-size: 18px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.room__name { font-size: 17px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .room__temp { display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; font-size: 15px; color: var(--text-2); }
 .room__temp svg { align-self: center; color: var(--muted); }
 .room__temp-current { font-weight: 600; color: var(--text); }
@@ -225,23 +226,35 @@ h2 { margin: 0; }
 .room__summary { font-size: 14px; color: var(--muted); }
 .room__summary--on { color: var(--accent-text); }
 .room__summary--warn { color: var(--warn); }
-.controls { display: flex; gap: 8px; flex-wrap: wrap; }
+.controls { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 6px; }
+/* Pill: the green fill shows the level (brightness, blind position) or full when simply on. */
 .control {
-  min-height: 44px; padding: 0 12px; border-radius: var(--radius);
-  display: flex; align-items: center; gap: 8px; cursor: pointer;
+  position: relative; overflow: hidden; isolation: isolate;
+  min-height: 40px; padding: 0 10px; border-radius: var(--radius);
+  display: flex; align-items: center; gap: 7px; cursor: pointer; text-align: left;
   border: 1px solid var(--line); background: var(--inset); color: var(--text-2);
-  font-size: 14px; max-width: 100%;
+  font-size: 13px; min-width: 0; user-select: none; -webkit-user-select: none;
 }
-.control__text { display: block; min-width: 0; }
+.control[data-dimmable] { touch-action: pan-y; cursor: ew-resize; }
+.control__fill {
+  position: absolute; inset: 0 auto 0 0; z-index: -1;
+  background: color-mix(in srgb, var(--accent) 45%, transparent); transition: width 0.25s ease-out;
+}
+.control--dragging .control__fill { transition: none; }
+.control svg { width: 16px; height: 16px; flex-shrink: 0; }
+.control__text { display: block; min-width: 0; flex: 1; }
 .control__label { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .control__state { display: none; }
-.control[aria-pressed="true"] { border-color: transparent; background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.control__value { flex-shrink: 0; font-size: 12px; opacity: 0.75; }
+/* On: a soft green pill with a stronger fill up to the level; text keeps its normal colour so it reads over both. */
+.control[aria-pressed="true"] { border-color: transparent; background: color-mix(in srgb, var(--accent) 14%, var(--inset)); color: var(--text); font-weight: 600; }
+.control[aria-pressed="true"] svg { color: var(--accent-text); }
 .control:disabled { cursor: default; opacity: 0.45; }
-.control svg { flex-shrink: 0; }
+@media (prefers-reduced-motion: reduce) { .control__fill { transition: none; } }
 
 /* Phones: tighter room cards, still 44px touch targets. */
 @media (max-width: 599px) {
-  .rooms { grid-auto-rows: auto; gap: 8px; }
+  .rooms { gap: 8px; }
   .room { padding: 12px 14px; gap: 8px; }
   .room__name { font-size: 16px; }
   .room__summary { font-size: 13px; }
@@ -255,7 +268,8 @@ h2 { margin: 0; }
   .control__text { display: flex; flex-direction: column; gap: 1px; }
   .control__label { font-weight: 600; }
   .control__state { display: block; font-size: 12px; font-weight: 400; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .control[aria-pressed="true"] .control__state { color: var(--accent-ink); opacity: 0.75; }
+  .control__value { display: none; }
+  .control[aria-pressed="true"] .control__state { color: var(--text-2); }
 }
 
 .empty { color: var(--muted); padding: 8px 4px; }
