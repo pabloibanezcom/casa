@@ -513,3 +513,41 @@ h2 { margin: 0; }
   .mini-player { grid-template-columns: 40px minmax(0, 1fr) auto; }
   .mini-player__volume { grid-column: 1 / -1; grid-row: 2; width: 100%; max-width: none; }
 }
+
+/* Blind control: a dialog with a live preview, a slider for the % and open / stop / close. */
+.blind { border: 0; padding: 0; background: transparent; color: var(--text); width: min(92vw, 440px); max-width: none; margin: auto; }
+.blind::backdrop { background: rgba(0, 0, 0, 0.5); }
+.blind[open] { animation: panel-in 0.18s ease-out; }
+.blind__sheet { background: var(--surface); border-radius: var(--radius); padding: 18px; display: flex; flex-direction: column; gap: 16px; box-shadow: var(--shadow-pop, 0 16px 48px rgba(0, 0, 0, 0.35)); }
+.blind__head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.blind__title { margin: 0; font-size: 18px; font-weight: 600; }
+.blind__status { margin: 2px 0 0; font-size: 14px; color: var(--muted); }
+.blind__body { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 18px; align-items: center; }
+.blind__preview {
+  position: relative; height: 136px; border-radius: calc(var(--radius) - 2px); overflow: hidden;
+  border: 2px solid var(--line-strong, var(--line)); background: linear-gradient(180deg, color-mix(in srgb, var(--sun) 28%, var(--inset)), var(--inset));
+}
+.blind__slats {
+  position: absolute; inset: 0 0 auto 0; height: var(--shut, 0%); transition: height 0.35s ease-out;
+  background: repeating-linear-gradient(180deg, var(--surface) 0 7px, var(--line) 7px 9px);
+  border-bottom: 3px solid var(--muted);
+}
+.blind__side { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.blind__value { font-size: 34px; line-height: 1; font-weight: 300; }
+.blind__slider { width: 100%; height: 36px; accent-color: var(--accent); cursor: pointer; margin: 0; }
+.blind__presets { display: flex; flex-wrap: wrap; gap: 6px; }
+.blind__preset, .blind__action {
+  border: 1px solid var(--line); background: var(--inset); color: var(--text-2); cursor: pointer;
+  border-radius: var(--radius); font: inherit; font-size: 13px;
+}
+.blind__preset { min-height: 36px; padding: 0 10px; }
+.blind__preset[aria-pressed="true"] { border-color: transparent; background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.blind__note { margin: 0; font-size: 14px; color: var(--muted); }
+.blind__actions { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 8px; }
+.blind__action { min-height: 52px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+.blind__action:active, .blind__preset:active { transform: scale(0.98); }
+@media (max-width: 599px) { .blind__body { grid-template-columns: 88px minmax(0, 1fr); gap: 14px; } .blind__preview { height: 112px; } }
+@media (prefers-reduced-motion: reduce) { .blind[open] { animation: none; } .blind__slats { transition: none; } }
+.blind__invert { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; cursor: pointer; padding-top: 12px; border-top: 1px solid var(--line); }
+.blind__invert input { margin: 3px 0 0; width: 18px; height: 18px; accent-color: var(--accent); flex-shrink: 0; }
+.blind__invert small { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
