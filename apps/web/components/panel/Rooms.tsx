@@ -221,7 +221,9 @@ function Room({ room, entities, onToggle }: { room: RoomModel; entities: HassEnt
   const summary = summarize(list);
   // The thermostat is shown next to the room name instead of as a control.
   const climate = list.find((e) => domainOf(e.entity_id) === "climate");
-  const controls = list.filter((e) => !["climate", "cover"].includes(domainOf(e.entity_id)));
+  // A room's main light ("Principal") always comes first.
+  const isMain = (e: HassEntity) => (shortName(e, room.name) === "Principal" ? 0 : 1);
+  const controls = list.filter((e) => !["climate", "cover"].includes(domainOf(e.entity_id))).sort((a, b) => isMain(a) - isMain(b));
   const blinds = list.filter((e) => domainOf(e.entity_id) === "cover");
   const camera = room.cameraIds.map((id) => entities[id]).find((e): e is HassEntity => !!e && !isSd(e) && e.state !== "unavailable");
   const [viewing, setViewing] = useState(false);
