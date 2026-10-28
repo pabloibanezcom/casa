@@ -24,7 +24,7 @@ export function Panel() {
             <Agenda />
           </aside>
           <main className="panel__main">
-            {status === "error" && <p className="warn" style={{ margin: 0 }}>{error ?? "Sin conexión con Home Assistant"}</p>}
+            {status === "error" && <p className="warn panel__error" style={{ margin: 0 }}>{error ?? "Sin conexión con Home Assistant"}</p>}
             <StatusStrip />
             <Rooms />
           </main>
