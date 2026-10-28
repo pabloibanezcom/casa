@@ -449,15 +449,6 @@ function summarize(list: HassEntity[]): { text: string; tone?: "on" | "warn" } {
     if (open) parts.push(`${open} persianas abiertas`);
   }
 
-  const offline = list.filter((e) => e.state === "unavailable");
-  if (offline.some((e) => domainOf(e.entity_id) === "climate")) {
-    parts.push("Termostato sin conexión");
-    tone = "warn";
-  } else if (offline.length && offline.length === list.length) {
-    parts.push("Sin conexión");
-    tone = "warn";
-  }
-
   return parts.length ? { text: capitalize(parts.join(" · ")), tone } : { text: "Todo apagado" };
 }
 
