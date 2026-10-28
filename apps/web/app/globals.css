@@ -253,6 +253,9 @@ h2 { margin: 0; }
 .rooms__cols { column-width: 240px; column-gap: 10px; }
 .rooms__cols > .room { break-inside: avoid; margin-bottom: 10px; }
 @media (max-width: 599px) { .rooms__cols { column-count: 1; } }
+.rooms__cols--fixed { column-width: auto; display: grid; grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr)); gap: 10px; align-items: start; }
+.rooms__col { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+@media (max-width: 599px) { .rooms__cols--fixed { grid-template-columns: 1fr; } }
 .room { padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
 .room__head { display: flex; flex-direction: column; gap: 2px; }
 .room__title { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; min-width: 0; }

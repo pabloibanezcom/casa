@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent, type ReactNode } from "react";
 import { domainOf, type HassEntities, type HassEntity } from "@casa/core";
 import { useCallService, useEntities, useHA } from "@casa/core/react";
 import { degrees } from "@/lib/format";
@@ -21,6 +21,18 @@ const CAMERAS_TAB = "__cameras";
 const norm = (v: string) => v.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
 /** Rooms to list first, in this order, e.g. NEXT_PUBLIC_ROOM_ORDER="Salón,Pasillo bajo". The rest follow alphabetically. */
 const ROOM_ORDER = (process.env.NEXT_PUBLIC_ROOM_ORDER ?? "").split(",").map(norm).filter(Boolean);
+/** Optional fixed columns, e.g. NEXT_PUBLIC_ROOM_COLUMNS="Salón,Pasillo bajo|Cocina,Habitación invitados". Rooms not listed follow in the last column. */
+const ROOM_COLUMNS = (process.env.NEXT_PUBLIC_ROOM_COLUMNS ?? "").split("|").map((c) => c.split(",").map(norm).filter(Boolean)).filter((c) => c.length);
+const splitColumns = <T extends { name: string }>(rooms: T[]): T[][] | null => {
+  if (!ROOM_COLUMNS.length || !rooms.some((r) => ROOM_COLUMNS.some((c) => c.includes(norm(r.name))))) return null;
+  const cols: T[][] = ROOM_COLUMNS.map(() => []);
+  for (const r of rooms) {
+    const i = ROOM_COLUMNS.findIndex((c) => c.includes(norm(r.name)));
+    cols[i === -1 ? cols.length - 1 : i]!.push(r);
+  }
+  for (const [i, c] of cols.entries()) c.sort((a, b) => ROOM_COLUMNS[i]!.indexOf(norm(a.name)) - ROOM_COLUMNS[i]!.indexOf(norm(b.name)));
+  return cols;
+};
 const roomRank = (name: string) => {
   const i = ROOM_ORDER.indexOf(norm(name));
   return i === -1 ? ROOM_ORDER.length : i;
@@ -211,11 +223,19 @@ export function Rooms() {
         <Climate key="climate" />
       ) : (
         <section key={floor.id} role="tabpanel" aria-label={`Estancias · ${floor.name}`} className="rooms">
-          <div className="rooms__cols">
-            {floor.rooms.map((room) => (
+          {(() => {
+            const cols = splitColumns(floor.rooms);
+            const render = (room: (typeof floor.rooms)[number]) => (
               <Room key={room.id} room={room} entities={entities} onToggle={(e) => void toggle(e)} />
-            ))}
-          </div>
+            );
+            return cols ? (
+              <div className="rooms__cols rooms__cols--fixed" style={{ "--cols": cols.length } as CSSProperties}>
+                {cols.map((c, i) => <div key={i} className="rooms__col">{c.map(render)}</div>)}
+              </div>
+            ) : (
+              <div className="rooms__cols">{floor.rooms.map(render)}</div>
+            );
+          })()}
         </section>
       )}
     </>
