@@ -156,27 +156,27 @@ export function Rooms() {
           {hasClimate && (
             <>
               <span className="tabs__divider" aria-hidden="true" />
-              <button role="tab" type="button" className="tab" aria-selected={showClimate} onClick={() => select(CLIMATE_TAB)}>
+              <button role="tab" type="button" className="tab tab--icon" aria-label="Climatización" title="Climatización" aria-selected={showClimate} onClick={() => select(CLIMATE_TAB)}>
                 <FlameIcon size={18} />
-                <span>Climatización</span>
+                <span className="tab__label">Climatización</span>
               </button>
             </>
           )}
           {hasMusic && (
             <>
               {!hasClimate && <span className="tabs__divider" aria-hidden="true" />}
-              <button role="tab" type="button" className="tab" aria-selected={showMusic} onClick={() => select(MUSIC_TAB)}>
+              <button role="tab" type="button" className="tab tab--icon" aria-label="Música" title="Música" aria-selected={showMusic} onClick={() => select(MUSIC_TAB)}>
                 <MusicIcon />
-                <span>Música</span>
+                <span className="tab__label">Música</span>
               </button>
             </>
           )}
           {hasCameras && (
             <>
               {!hasClimate && !hasMusic && <span className="tabs__divider" aria-hidden="true" />}
-              <button role="tab" type="button" className="tab" aria-selected={showCameras} onClick={() => select(CAMERAS_TAB)}>
+              <button role="tab" type="button" className="tab tab--icon" aria-label="Cámaras" title="Cámaras" aria-selected={showCameras} onClick={() => select(CAMERAS_TAB)}>
                 <CameraIcon size={20} />
-                <span>Cámaras</span>
+                <span className="tab__label">Cámaras</span>
               </button>
             </>
           )}
