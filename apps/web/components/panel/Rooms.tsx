@@ -230,12 +230,12 @@ function Room({ room, entities, onToggle }: { room: RoomModel; entities: HassEnt
       <div className="room__head">
         <div className="room__title">
           <h2 className="room__name">{room.name}</h2>
-          {climate && <RoomTemp entity={climate} />}
           {camera && (
             <button type="button" className="room__cam" aria-label={`Ver cámara de ${room.name}`} onClick={() => setViewing(true)}>
               <CameraIcon size={18} />
             </button>
           )}
+          {climate && <RoomTemp entity={climate} />}
         </div>
         {camera && viewing && <CameraDialog camera={camera} onClose={() => setViewing(false)} />}
         {/* Only problems get a line; on/off is already visible on the buttons. */}

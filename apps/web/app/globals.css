@@ -588,7 +588,7 @@ h2 { margin: 0; }
 .room__title { align-items: center; justify-content: flex-start; }
 .room__title > .room__name { margin-right: auto; }
 .room__cam {
-  flex-shrink: 0; width: 32px; height: 32px; margin: -4px -6px -4px 0; padding: 0;
+  flex-shrink: 0; width: 32px; height: 32px; margin: -4px 0; padding: 0;
   display: grid; place-items: center; border: 0; border-radius: 50%;
   background: var(--inset); color: var(--text-2); cursor: pointer;
 }
