@@ -8,7 +8,7 @@ import { BlindPill } from "./Blind";
 import { CameraDialog, Cameras, isSd, useCameras } from "./Cameras";
 import { Climate, useClimateSystem } from "./Climate";
 import { Music, useMusicAssistant } from "./Music";
-import { BlindIcon, BulbIcon, CameraIcon, FanIcon, FlameIcon, FloorIcon, GardenIcon, MusicIcon, PlugIcon, TempIcon, ThermostatIcon, TvIcon } from "./icons";
+import { BlindIcon, BulbIcon, CameraIcon, FanIcon, FlameIcon, LedStripIcon, FloorIcon, GardenIcon, MusicIcon, PlugIcon, TempIcon, ThermostatIcon, TvIcon } from "./icons";
 
 const ORDER = ["light", "switch", "cover", "fan", "climate", "media_player"];
 /** Integrations whose switches are settings, not room controls. */
@@ -300,6 +300,7 @@ function Control({ entity, label, onToggle }: { entity: HassEntity; label: strin
     : domain === "fan" ? FanIcon
     : domain === "media_player" ? TvIcon
     : entity.attributes.device_class === "outlet" ? PlugIcon
+    : /^mdi:led/.test(String(entity.attributes.icon ?? "")) ? LedStripIcon // set per entity in HA
     : BulbIcon;
   const state = stateText(entity, domain, on);
   if (domain === "cover") return <BlindPill entity={entity} label={label} />;
@@ -479,5 +480,7 @@ function shortName(e: HassEntity, areaName: string) {
   // The icon already says it's a light or a switch, so "Luz escalera B" reads as "Escalera B".
   if (kept.length > 1 && /^(luz|luces|interruptor)$/i.test(kept[0]!)) kept.shift();
   const short = kept.join(" ").trim();
+  // A room's only light is just "Luz" once the room name is gone: call it the main one.
+  if (/^luz(es)?$/i.test(short)) return "Principal";
   return short ? capitalize(short) : full;
 }
