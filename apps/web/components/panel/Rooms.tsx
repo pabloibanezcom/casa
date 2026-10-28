@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent, type ReactNode } from "react";
 import { domainOf, type HassEntities, type HassEntity } from "@casa/core";
 import { useCallService, useEntities, useHA } from "@casa/core/react";
 import { degrees } from "@/lib/format";
@@ -8,7 +8,7 @@ import { BlindPill } from "./Blind";
 import { CameraDialog, Cameras, isSd, useCameras } from "./Cameras";
 import { Climate, useClimateSystem } from "./Climate";
 import { Music, useMusicAssistant } from "./Music";
-import { BlindIcon, BulbIcon, CameraIcon, FanIcon, FlameIcon, FloorIcon, GardenIcon, MusicIcon, PlugIcon, TempIcon, ThermostatIcon, TvIcon } from "./icons";
+import { BlindIcon, BulbIcon, CameraIcon, FanIcon, DownlightIcon, FlameIcon, PendantIcon, PlafonIcon, WallLightIcon, SpotsIcon, LedStripIcon, FloorIcon, GardenIcon, MusicIcon, PlugIcon, TempIcon, ThermostatIcon, TvIcon } from "./icons";
 
 const ORDER = ["light", "switch", "cover", "fan", "climate", "media_player"];
 /** Integrations whose switches are settings, not room controls. */
@@ -21,9 +21,33 @@ const CAMERAS_TAB = "__cameras";
 const norm = (v: string) => v.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
 /** Rooms to list first, in this order, e.g. NEXT_PUBLIC_ROOM_ORDER="Salón,Pasillo bajo". The rest follow alphabetically. */
 const ROOM_ORDER = (process.env.NEXT_PUBLIC_ROOM_ORDER ?? "").split(",").map(norm).filter(Boolean);
+/** Optional fixed columns. ";" separates floors, "|" separates columns, e.g. NEXT_PUBLIC_ROOM_COLUMNS="Salón,Pasillo bajo|Cocina,Baño invitados;Habitación principal|Estudio". Rooms not listed follow in the last column. */
+const ROOM_LAYOUTS = (process.env.NEXT_PUBLIC_ROOM_COLUMNS ?? "")
+  .split(";")
+  .map((f) => f.split("|").map((c) => c.split(",").map(norm).filter(Boolean)).filter((c) => c.length))
+  .filter((f) => f.length);
+const splitColumns = <T extends { name: string }>(rooms: T[]): T[][] | null => {
+  const layout = ROOM_LAYOUTS.find((f) => rooms.some((r) => f.some((c) => c.includes(norm(r.name)))));
+  if (!layout) return null;
+  const cols: T[][] = layout.map(() => []);
+  for (const r of rooms) {
+    const i = layout.findIndex((c) => c.includes(norm(r.name)));
+    cols[i === -1 ? cols.length - 1 : i]!.push(r);
+  }
+  for (const [i, c] of cols.entries()) c.sort((a, b) => layout[i]!.indexOf(norm(a.name)) - layout[i]!.indexOf(norm(b.name)));
+  return cols;
+};
 const roomRank = (name: string) => {
   const i = ROOM_ORDER.indexOf(norm(name));
   return i === -1 ? ROOM_ORDER.length : i;
+};
+
+/** Controls to list first inside a room, by label, e.g. NEXT_PUBLIC_CONTROL_ORDER="Entrada,Pasillo,Escalera". "Principal" is always first. */
+const CONTROL_ORDER = (process.env.NEXT_PUBLIC_CONTROL_ORDER ?? "").split(",").map(norm).filter(Boolean);
+const controlRank = (label: string) => {
+  if (norm(label) === "principal") return -1;
+  const i = CONTROL_ORDER.indexOf(norm(label));
+  return i === -1 ? CONTROL_ORDER.length : i;
 };
 
 interface RoomModel {
@@ -203,11 +227,19 @@ export function Rooms() {
         <Climate key="climate" />
       ) : (
         <section key={floor.id} role="tabpanel" aria-label={`Estancias · ${floor.name}`} className="rooms">
-          <div className="rooms__cols">
-            {floor.rooms.map((room) => (
+          {(() => {
+            const cols = splitColumns(floor.rooms);
+            const render = (room: (typeof floor.rooms)[number]) => (
               <Room key={room.id} room={room} entities={entities} onToggle={(e) => void toggle(e)} />
-            ))}
-          </div>
+            );
+            return cols ? (
+              <div className="rooms__cols rooms__cols--fixed" style={{ "--cols": cols.length } as CSSProperties}>
+                {cols.map((c, i) => <div key={i} className="rooms__col">{c.map(render)}</div>)}
+              </div>
+            ) : (
+              <div className="rooms__cols">{floor.rooms.map(render)}</div>
+            );
+          })()}
         </section>
       )}
     </>
@@ -221,7 +253,14 @@ function Room({ room, entities, onToggle }: { room: RoomModel; entities: HassEnt
   const summary = summarize(list);
   // The thermostat is shown next to the room name instead of as a control.
   const climate = list.find((e) => domainOf(e.entity_id) === "climate");
-  const controls = list.filter((e) => domainOf(e.entity_id) !== "climate");
+  const rawControls = list.filter((e) => !["climate", "cover"].includes(domainOf(e.entity_id)));
+  // Two controls that would get the same label (a fan and its light) keep the "Luz" prefix to tell them apart.
+  const base = rawControls.map((e) => shortName(e, room.name));
+  const labels = new Map(
+    rawControls.map((e, i): [string, string] => [e.entity_id, base.filter((l) => l.toLowerCase() === base[i]!.toLowerCase()).length > 1 && domainOf(e.entity_id) === "light" ? shortName(e, room.name, true) : base[i]!]),
+  );
+  const controls = [...rawControls].sort((a, b) => controlRank(labels.get(a.entity_id)!) - controlRank(labels.get(b.entity_id)!));
+  const blinds = list.filter((e) => domainOf(e.entity_id) === "cover");
   const camera = room.cameraIds.map((id) => entities[id]).find((e): e is HassEntity => !!e && !isSd(e) && e.state !== "unavailable");
   const [viewing, setViewing] = useState(false);
 
@@ -244,6 +283,13 @@ function Room({ room, entities, onToggle }: { room: RoomModel; entities: HassEnt
       {controls.length > 0 && (
         <div className="controls">
           {controls.map((e) => (
+            <Control key={e.entity_id} entity={e} label={labels.get(e.entity_id)!} onToggle={() => onToggle(e)} />
+          ))}
+        </div>
+      )}
+      {blinds.length > 0 && (
+        <div className="controls controls--blinds">
+          {blinds.map((e) => (
             <Control key={e.entity_id} entity={e} label={shortName(e, room.name)} onToggle={() => onToggle(e)} />
           ))}
         </div>
@@ -300,6 +346,12 @@ function Control({ entity, label, onToggle }: { entity: HassEntity; label: strin
     : domain === "fan" ? FanIcon
     : domain === "media_player" ? TvIcon
     : entity.attributes.device_class === "outlet" ? PlugIcon
+    : /^mdi:led/.test(String(entity.attributes.icon ?? "")) ? LedStripIcon // set per entity in HA
+    : /^mdi:(light-recessed|lightbulb-spot)/.test(String(entity.attributes.icon ?? "")) ? DownlightIcon
+    : /^mdi:ceiling-light(?!-multiple)/.test(String(entity.attributes.icon ?? "")) ? PlafonIcon
+    : /^mdi:(track-light|spotlight)/.test(String(entity.attributes.icon ?? "")) ? SpotsIcon
+    : /^mdi:(wall-sconce|vanity-light)/.test(String(entity.attributes.icon ?? "")) ? WallLightIcon
+    : /^mdi:(chandelier|lamp|ceiling-light-multiple)/.test(String(entity.attributes.icon ?? "")) ? PendantIcon
     : BulbIcon;
   const state = stateText(entity, domain, on);
   if (domain === "cover") return <BlindPill entity={entity} label={label} />;
@@ -472,12 +524,14 @@ function summarize(list: HassEntity[]): { text: string; tone?: "on" | "warn" } {
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 /** "Luz pasillo cocina" in "Cocina" → "Luz pasillo"; never empty. */
-function shortName(e: HassEntity, areaName: string) {
+function shortName(e: HassEntity, areaName: string, keepPrefix = false) {
   const full = String(e.attributes.friendly_name ?? e.entity_id);
   const words = areaName.toLowerCase().split(/\s+/);
   const kept = full.split(/\s+/).filter((w) => !words.includes(w.toLowerCase()));
   // The icon already says it's a light or a switch, so "Luz escalera B" reads as "Escalera B".
-  if (kept.length > 1 && /^(luz|luces|interruptor)$/i.test(kept[0]!)) kept.shift();
+  if (!keepPrefix && kept.length > 1 && /^(luz|luces|interruptor)$/i.test(kept[0]!)) kept.shift();
   const short = kept.join(" ").trim();
+  // A room's only light is just "Luz" once the room name is gone: call it the main one.
+  if (/^luz(es)?$/i.test(short)) return "Principal";
   return short ? capitalize(short) : full;
 }
