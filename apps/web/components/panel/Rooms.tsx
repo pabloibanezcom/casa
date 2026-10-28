@@ -8,7 +8,7 @@ import { BlindPill } from "./Blind";
 import { CameraDialog, Cameras, isSd, useCameras } from "./Cameras";
 import { Climate, useClimateSystem } from "./Climate";
 import { Music, useMusicAssistant } from "./Music";
-import { BlindIcon, BulbIcon, CameraIcon, FanIcon, DownlightIcon, FlameIcon, PendantIcon, PlafonIcon, MirrorLightIcon, SpotsIcon, LedStripIcon, FloorIcon, GardenIcon, MusicIcon, PlugIcon, TempIcon, ThermostatIcon, TvIcon } from "./icons";
+import { BlindIcon, BulbIcon, CameraIcon, FanIcon, DownlightIcon, FlameIcon, PendantIcon, PlafonIcon, WallLightIcon, SpotsIcon, LedStripIcon, FloorIcon, GardenIcon, MusicIcon, PlugIcon, TempIcon, ThermostatIcon, TvIcon } from "./icons";
 
 const ORDER = ["light", "switch", "cover", "fan", "climate", "media_player"];
 /** Integrations whose switches are settings, not room controls. */
@@ -322,7 +322,7 @@ function Control({ entity, label, onToggle }: { entity: HassEntity; label: strin
     : /^mdi:(light-recessed|lightbulb-spot)/.test(String(entity.attributes.icon ?? "")) ? DownlightIcon
     : /^mdi:ceiling-light(?!-multiple)/.test(String(entity.attributes.icon ?? "")) ? PlafonIcon
     : /^mdi:(track-light|spotlight)/.test(String(entity.attributes.icon ?? "")) ? SpotsIcon
-    : /^mdi:(vanity-light|mirror)/.test(String(entity.attributes.icon ?? "")) ? MirrorLightIcon
+    : /^mdi:(wall-sconce|vanity-light)/.test(String(entity.attributes.icon ?? "")) ? WallLightIcon
     : /^mdi:(chandelier|lamp|ceiling-light-multiple)/.test(String(entity.attributes.icon ?? "")) ? PendantIcon
     : BulbIcon;
   const state = stateText(entity, domain, on);
