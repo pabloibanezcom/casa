@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState, type ComponentType } from "react";
 import { houseModeKey, type HouseModeKey } from "@casa/core";
-import { useGuestsEntity, useModeEntity } from "./modeMock";
-import { AwayDoorIcon, GuestsIcon, HomeIcon, MoonIcon, SuitcaseIcon, SunsetIcon } from "./icons";
+import { useModeEntity } from "./modeMock";
+import { AwayDoorIcon, HomeIcon, MoonIcon, SuitcaseIcon, SunsetIcon } from "./icons";
 
 const ICONS: Record<HouseModeKey, ComponentType<{ size?: number }>> = {
   home: HomeIcon,
@@ -21,10 +21,9 @@ export function useHouseMode(): HouseModeKey | null {
   return houseModeKey(mode.state);
 }
 
-/** Mode selector (+ guests switch). Renders nothing until the helpers exist in HA. */
+/** Mode selector. Renders nothing until the helpers exist in HA. */
 export function HouseMode() {
   const { entity: mode, mocked, select } = useModeEntity();
-  const { entity: guests, toggle: toggleGuests } = useGuestsEntity();
   const cardRef = useRef<HTMLElement>(null);
   const [cardHidden, setCardHidden] = useState(false);
 
@@ -64,25 +63,7 @@ export function HouseMode() {
   return (
     <>
       <section aria-label="Modo de la casa" className="card house-mode" ref={cardRef}>
-        <div className="house-mode__head">
-          <span className="eyebrow">
-            Modo{mocked && <span className="house-mode__mock"> · simulado</span>}
-          </span>
-          {guests && (
-            <button
-              type="button"
-              role="switch"
-              aria-checked={guests.state === "on"}
-              className="guests"
-              disabled={guests.state === "unavailable"}
-              onClick={() => void toggleGuests()}
-            >
-              <GuestsIcon size={16} />
-              <span>Invitados</span>
-              <span className="guests__track" aria-hidden="true"><span className="guests__thumb" /></span>
-            </button>
-          )}
-        </div>
+        {mocked && <span className="eyebrow house-mode__mock">Modo simulado</span>}
         <div className="house-mode__options" role="radiogroup" aria-label="Modo">
           {modeButtons("card")}
         </div>
