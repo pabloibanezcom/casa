@@ -221,7 +221,8 @@ function Room({ room, entities, onToggle }: { room: RoomModel; entities: HassEnt
   const summary = summarize(list);
   // The thermostat is shown next to the room name instead of as a control.
   const climate = list.find((e) => domainOf(e.entity_id) === "climate");
-  const controls = list.filter((e) => domainOf(e.entity_id) !== "climate");
+  const controls = list.filter((e) => !["climate", "cover"].includes(domainOf(e.entity_id)));
+  const blinds = list.filter((e) => domainOf(e.entity_id) === "cover");
   const camera = room.cameraIds.map((id) => entities[id]).find((e): e is HassEntity => !!e && !isSd(e) && e.state !== "unavailable");
   const [viewing, setViewing] = useState(false);
 
@@ -244,6 +245,13 @@ function Room({ room, entities, onToggle }: { room: RoomModel; entities: HassEnt
       {controls.length > 0 && (
         <div className="controls">
           {controls.map((e) => (
+            <Control key={e.entity_id} entity={e} label={shortName(e, room.name)} onToggle={() => onToggle(e)} />
+          ))}
+        </div>
+      )}
+      {blinds.length > 0 && (
+        <div className="controls controls--blinds">
+          {blinds.map((e) => (
             <Control key={e.entity_id} entity={e} label={shortName(e, room.name)} onToggle={() => onToggle(e)} />
           ))}
         </div>

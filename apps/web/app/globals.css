@@ -593,3 +593,6 @@ h2 { margin: 0; }
   background: var(--inset); color: var(--text-2); cursor: pointer;
 }
 .room__cam:hover { background: var(--line); }
+
+/* Blinds sit in their own full-width row under the lights. */
+.controls--blinds { grid-template-columns: 1fr; padding-top: 8px; border-top: 1px solid var(--line); }
