@@ -5,7 +5,7 @@ import { domainOf, type HassEntities, type HassEntity } from "@casa/core";
 import { useCallService, useEntities, useHA } from "@casa/core/react";
 import { degrees } from "@/lib/format";
 import { BlindPill } from "./Blind";
-import { Cameras, useCameras } from "./Cameras";
+import { CameraDialog, Cameras, isSd, useCameras } from "./Cameras";
 import { Climate, useClimateSystem } from "./Climate";
 import { Music, useMusicAssistant } from "./Music";
 import { BlindIcon, BulbIcon, CameraIcon, FanIcon, FlameIcon, FloorIcon, GardenIcon, MusicIcon, PlugIcon, TempIcon, ThermostatIcon, TvIcon } from "./icons";
@@ -30,6 +30,8 @@ interface RoomModel {
   id: string;
   name: string;
   entityIds: string[];
+  /** Cameras assigned to this area in HA (the HD/SD split is applied when rendering). */
+  cameraIds: string[];
 }
 
 /** The floor icon is set in HA; outdoor-looking ones (tree, flower, garden…) get the garden glyph. */
@@ -52,6 +54,12 @@ export function Rooms() {
       byArea.set(areaId, [...(byArea.get(areaId) ?? []), entityId]);
     }
 
+    const camerasByArea = new Map<string, string[]>();
+    for (const [entityId, areaId] of entityAreas) {
+      if (domainOf(entityId) !== "camera") continue;
+      camerasByArea.set(areaId, [...(camerasByArea.get(areaId) ?? []), entityId]);
+    }
+
     const floorList = [...registries.floors].sort((a, b) => (a.level ?? 0) - (b.level ?? 0));
     return [...floorList.map((f) => ({ id: f.floor_id, name: f.name, icon: f.icon ?? null })), { id: "", name: "Otras", icon: "mdi:fence" }]
       .map((f) => ({
@@ -63,6 +71,7 @@ export function Rooms() {
             id: a.area_id,
             name: a.name,
             entityIds: byArea.get(a.area_id)!.sort((x, y) => ORDER.indexOf(domainOf(x)) - ORDER.indexOf(domainOf(y)) || x.localeCompare(y)),
+            cameraIds: camerasByArea.get(a.area_id) ?? [],
           })),
       }))
       .filter((f) => f.rooms.length > 0);
@@ -213,6 +222,8 @@ function Room({ room, entities, onToggle }: { room: RoomModel; entities: HassEnt
   // The thermostat is shown next to the room name instead of as a control.
   const climate = list.find((e) => domainOf(e.entity_id) === "climate");
   const controls = list.filter((e) => domainOf(e.entity_id) !== "climate");
+  const camera = room.cameraIds.map((id) => entities[id]).find((e): e is HassEntity => !!e && !isSd(e) && e.state !== "unavailable");
+  const [viewing, setViewing] = useState(false);
 
   return (
     <article className="card room">
@@ -220,7 +231,13 @@ function Room({ room, entities, onToggle }: { room: RoomModel; entities: HassEnt
         <div className="room__title">
           <h2 className="room__name">{room.name}</h2>
           {climate && <RoomTemp entity={climate} />}
+          {camera && (
+            <button type="button" className="room__cam" aria-label={`Ver cámara de ${room.name}`} onClick={() => setViewing(true)}>
+              <CameraIcon size={18} />
+            </button>
+          )}
         </div>
+        {camera && viewing && <CameraDialog camera={camera} onClose={() => setViewing(false)} />}
         {/* Only problems get a line; on/off is already visible on the buttons. */}
         {summary.tone === "warn" && <span className="room__summary room__summary--warn">{summary.text}</span>}
       </div>

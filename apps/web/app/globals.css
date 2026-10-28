@@ -583,3 +583,13 @@ h2 { margin: 0; }
 /* Climate, music and cameras are icon-only so every tab fits without scrolling. */
 .tab--icon { flex: 0 0 auto; min-width: 0; width: 56px; padding: 0; }
 .tab--icon .tab__label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+
+/* Room camera button: top-right of the card header. */
+.room__title { align-items: center; justify-content: flex-start; }
+.room__title > .room__name { margin-right: auto; }
+.room__cam {
+  flex-shrink: 0; width: 32px; height: 32px; margin: -4px -6px -4px 0; padding: 0;
+  display: grid; place-items: center; border: 0; border-radius: 50%;
+  background: var(--inset); color: var(--text-2); cursor: pointer;
+}
+.room__cam:hover { background: var(--line); }
