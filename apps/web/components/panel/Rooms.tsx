@@ -8,7 +8,7 @@ import { BlindPill } from "./Blind";
 import { Cameras, useCameras } from "./Cameras";
 import { Climate, useClimateSystem } from "./Climate";
 import { Music, useMusicAssistant } from "./Music";
-import { BlindIcon, BulbIcon, CameraIcon, FanIcon, FlameIcon, FloorIcon, GardenIcon, MusicIcon, PlugIcon, TempIcon, TvIcon } from "./icons";
+import { BlindIcon, BulbIcon, CameraIcon, FanIcon, FlameIcon, FloorIcon, GardenIcon, MusicIcon, PlugIcon, TempIcon, ThermostatIcon, TvIcon } from "./icons";
 
 const ORDER = ["light", "switch", "cover", "fan", "climate", "media_player"];
 /** Integrations whose switches are settings, not room controls. */
@@ -157,7 +157,7 @@ export function Rooms() {
             <>
               <span className="tabs__divider" aria-hidden="true" />
               <button role="tab" type="button" className="tab tab--icon" aria-label="Climatización" title="Climatización" aria-selected={showClimate} onClick={() => select(CLIMATE_TAB)}>
-                <FlameIcon size={18} />
+                <ThermostatIcon size={22} />
                 <span className="tab__label">Climatización</span>
               </button>
             </>

@@ -16,6 +16,10 @@ export const TvIcon = ({ size = 22 }: P) => (
 export const TempIcon = ({ size = 22 }: P) => (
   <svg {...base(size)}><path d="M10 14.5V5a2 2 0 1 1 4 0v9.5a4 4 0 1 1-4 0z" /></svg>
 );
+/** Heating and cooling: a thermometer with a hot and a cold tick. */
+export const ThermostatIcon = ({ size = 22 }: P) => (
+  <svg {...base(size)}><path d="M8 14.5V5a2 2 0 1 1 4 0v9.5a4 4 0 1 1-4 0z" /><path d="M16 5h4M16 9h2.5M16 13h4" /></svg>
+);
 export const FanIcon = ({ size = 22 }: P) => (
   <svg {...base(size)}><circle cx="12" cy="12" r="1.6" /><path d="M12 10.4C11 6 12.5 3 15 3.5s2.2 4-1.4 7.2M13.4 12.8c3.9 2.2 5.4 5.2 3.6 7s-4.6-.6-5.3-5.3M10.6 12.6C6.4 14 3.5 12.8 3.6 10.3s3.8-3.2 7.4.4" /></svg>
 );
