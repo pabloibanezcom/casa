@@ -63,6 +63,15 @@ export const SpotsIcon = ({ size = 22 }: P) => (
     <path d="M6 15.5v3M9 15.5v3M15 15.5v3M18 15.5v3" />
   </svg>
 );
+/** Bathroom mirror with a light bar above it. */
+export const MirrorLightIcon = ({ size = 22 }: P) => (
+  <svg {...base(size)}>
+    <path d="M6 3.5h12" />
+    <path d="M8 6.5h.01M12 6.5h.01M16 6.5h.01" />
+    <rect x="5.5" y="9.5" width="13" height="11.5" rx="6.5" />
+    <path d="M9.5 14.5l2-2M9.5 17.5l4-4" />
+  </svg>
+);
 export const FanIcon = ({ size = 22 }: P) => (
   <svg {...base(size)}><circle cx="12" cy="12" r="1.6" /><path d="M12 10.4C11 6 12.5 3 15 3.5s2.2 4-1.4 7.2M13.4 12.8c3.9 2.2 5.4 5.2 3.6 7s-4.6-.6-5.3-5.3M10.6 12.6C6.4 14 3.5 12.8 3.6 10.3s3.8-3.2 7.4.4" /></svg>
 );
