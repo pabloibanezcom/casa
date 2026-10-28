@@ -26,6 +26,14 @@ const roomRank = (name: string) => {
   return i === -1 ? ROOM_ORDER.length : i;
 };
 
+/** Controls to list first inside a room, by label, e.g. NEXT_PUBLIC_CONTROL_ORDER="Entrada,Pasillo,Escalera". "Principal" is always first. */
+const CONTROL_ORDER = (process.env.NEXT_PUBLIC_CONTROL_ORDER ?? "").split(",").map(norm).filter(Boolean);
+const controlRank = (label: string) => {
+  if (norm(label) === "principal") return -1;
+  const i = CONTROL_ORDER.indexOf(norm(label));
+  return i === -1 ? CONTROL_ORDER.length : i;
+};
+
 interface RoomModel {
   id: string;
   name: string;
@@ -221,9 +229,9 @@ function Room({ room, entities, onToggle }: { room: RoomModel; entities: HassEnt
   const summary = summarize(list);
   // The thermostat is shown next to the room name instead of as a control.
   const climate = list.find((e) => domainOf(e.entity_id) === "climate");
-  // A room's main light ("Principal") always comes first.
-  const isMain = (e: HassEntity) => (shortName(e, room.name) === "Principal" ? 0 : 1);
-  const controls = list.filter((e) => !["climate", "cover"].includes(domainOf(e.entity_id))).sort((a, b) => isMain(a) - isMain(b));
+  const controls = list
+    .filter((e) => !["climate", "cover"].includes(domainOf(e.entity_id)))
+    .sort((a, b) => controlRank(shortName(a, room.name)) - controlRank(shortName(b, room.name)));
   const blinds = list.filter((e) => domainOf(e.entity_id) === "cover");
   const camera = room.cameraIds.map((id) => entities[id]).find((e): e is HassEntity => !!e && !isSd(e) && e.state !== "unavailable");
   const [viewing, setViewing] = useState(false);
