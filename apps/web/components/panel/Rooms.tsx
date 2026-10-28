@@ -8,7 +8,7 @@ import { BlindPill } from "./Blind";
 import { Cameras, useCameras } from "./Cameras";
 import { Climate, useClimateSystem } from "./Climate";
 import { Music, useMusicAssistant } from "./Music";
-import { BlindIcon, BulbIcon, CameraIcon, FanIcon, FlameIcon, FloorIcon, GardenIcon, MusicIcon, PlugIcon, TempIcon, TvIcon } from "./icons";
+import { BlindIcon, BulbIcon, CameraIcon, FanIcon, FlameIcon, FloorIcon, GardenIcon, MusicIcon, PlugIcon, TempIcon, ThermostatIcon, TvIcon } from "./icons";
 
 const ORDER = ["light", "switch", "cover", "fan", "climate", "media_player"];
 /** Integrations whose switches are settings, not room controls. */
@@ -32,6 +32,9 @@ interface RoomModel {
   entityIds: string[];
 }
 
+/** The floor icon is set in HA; outdoor-looking ones (tree, flower, garden…) get the garden glyph. */
+const isOutdoorIcon = (icon?: string | null) => /^mdi:(tree|pine-tree|palm-tree|flower|flower-tulip|sprout|leaf|grass|fence|garden|home-group|terrain)/.test(icon ?? "");
+
 export function Rooms() {
   const { session } = useHA();
   const entities = useEntities();
@@ -50,7 +53,7 @@ export function Rooms() {
     }
 
     const floorList = [...registries.floors].sort((a, b) => (a.level ?? 0) - (b.level ?? 0));
-    return [...floorList.map((f) => ({ id: f.floor_id, name: f.name })), { id: "", name: "Otras" }]
+    return [...floorList.map((f) => ({ id: f.floor_id, name: f.name, icon: f.icon ?? null })), { id: "", name: "Otras", icon: "mdi:fence" }]
       .map((f) => ({
         ...f,
         rooms: registries.areas
@@ -149,34 +152,34 @@ export function Rooms() {
           )}
           {floors.map((f, i) => (
             <button key={f.id} role="tab" type="button" className="tab" aria-selected={!showClimate && !showMusic && !showCameras && f.id === floor?.id} onClick={() => select(f.id)}>
-              {f.id ? <FloorIcon storey={i} /> : <GardenIcon />}
+              {isOutdoorIcon(f.icon) ? <GardenIcon /> : <FloorIcon storey={i} />}
               <span>{f.name}</span>
             </button>
           ))}
           {hasClimate && (
             <>
               <span className="tabs__divider" aria-hidden="true" />
-              <button role="tab" type="button" className="tab" aria-selected={showClimate} onClick={() => select(CLIMATE_TAB)}>
-                <FlameIcon size={18} />
-                <span>Climatización</span>
+              <button role="tab" type="button" className="tab tab--icon" aria-label="Climatización" title="Climatización" aria-selected={showClimate} onClick={() => select(CLIMATE_TAB)}>
+                <ThermostatIcon size={22} />
+                <span className="tab__label">Climatización</span>
               </button>
             </>
           )}
           {hasMusic && (
             <>
               {!hasClimate && <span className="tabs__divider" aria-hidden="true" />}
-              <button role="tab" type="button" className="tab" aria-selected={showMusic} onClick={() => select(MUSIC_TAB)}>
+              <button role="tab" type="button" className="tab tab--icon" aria-label="Música" title="Música" aria-selected={showMusic} onClick={() => select(MUSIC_TAB)}>
                 <MusicIcon />
-                <span>Música</span>
+                <span className="tab__label">Música</span>
               </button>
             </>
           )}
           {hasCameras && (
             <>
               {!hasClimate && !hasMusic && <span className="tabs__divider" aria-hidden="true" />}
-              <button role="tab" type="button" className="tab" aria-selected={showCameras} onClick={() => select(CAMERAS_TAB)}>
+              <button role="tab" type="button" className="tab tab--icon" aria-label="Cámaras" title="Cámaras" aria-selected={showCameras} onClick={() => select(CAMERAS_TAB)}>
                 <CameraIcon size={20} />
-                <span>Cámaras</span>
+                <span className="tab__label">Cámaras</span>
               </button>
             </>
           )}

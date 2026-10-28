@@ -11,6 +11,7 @@ export interface Floor {
   floor_id: string;
   name: string;
   level: number | null;
+  icon?: string | null;
 }
 
 export interface DeviceEntry {
