@@ -103,6 +103,20 @@ export function Rooms() {
     return () => ro.disconnect();
   }, [activeKey, floors.length]);
 
+  // The wide layout starts the tab content right under the tabs, whatever the
+  // height of the modes box beside them, so publish the tabs' height.
+  const wrapRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const wrap = wrapRef.current;
+    const panel = wrap?.closest<HTMLElement>(".panel");
+    if (!wrap || !panel) return;
+    const publish = () => panel.style.setProperty("--tabs-h", `${wrap.offsetHeight}px`);
+    publish();
+    const ro = new ResizeObserver(publish);
+    ro.observe(wrap);
+    return () => ro.disconnect();
+  });
+
   const select = (id: string) => {
     setSelected(id);
     try { localStorage.setItem(TAB_KEY, id); } catch {}
@@ -120,7 +134,7 @@ export function Rooms() {
 
   return (
     <>
-      <div className="tabs-wrap">
+      <div className="tabs-wrap" ref={wrapRef}>
         <div role="tablist" aria-label="Plantas" className="tabs" ref={tablistRef}>
           {indicator && (
             <span
