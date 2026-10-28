@@ -8,7 +8,7 @@ import { CameraIcon, CloseIcon } from "./icons";
 const SNAPSHOT_EVERY = 8_000;
 
 /** Tapo exposes one entity per stream quality ("… HD stream" / "… SD stream"). Only the HD ones are wanted. */
-const isSd = (e: HassEntity) => /(^|[\s_.])sd([\s_.]|$)/i.test(`${e.entity_id} ${e.attributes.friendly_name ?? ""}`);
+export const isSd = (e: HassEntity) => /(^|[\s_.])sd([\s_.]|$)/i.test(`${e.entity_id} ${e.attributes.friendly_name ?? ""}`);
 
 export function useCameras(): HassEntity[] {
   const entities = useEntities();
@@ -94,7 +94,7 @@ function CameraTile({ camera, tick, onOpen }: { camera: HassEntity; tick: number
 }
 
 /** Live view: the MJPEG stream only exists while the dialog is mounted, so closing it stops the traffic. */
-function CameraDialog({ camera, onClose }: { camera: HassEntity; onClose: () => void }) {
+export function CameraDialog({ camera, onClose }: { camera: HassEntity; onClose: () => void }) {
   const hassUrl = useHassUrl();
   const ref = useRef<HTMLDialogElement>(null);
   const [failed, setFailed] = useState(false);
