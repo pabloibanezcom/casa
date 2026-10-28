@@ -21,16 +21,20 @@ const CAMERAS_TAB = "__cameras";
 const norm = (v: string) => v.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
 /** Rooms to list first, in this order, e.g. NEXT_PUBLIC_ROOM_ORDER="Salón,Pasillo bajo". The rest follow alphabetically. */
 const ROOM_ORDER = (process.env.NEXT_PUBLIC_ROOM_ORDER ?? "").split(",").map(norm).filter(Boolean);
-/** Optional fixed columns, e.g. NEXT_PUBLIC_ROOM_COLUMNS="Salón,Pasillo bajo|Cocina,Habitación invitados". Rooms not listed follow in the last column. */
-const ROOM_COLUMNS = (process.env.NEXT_PUBLIC_ROOM_COLUMNS ?? "").split("|").map((c) => c.split(",").map(norm).filter(Boolean)).filter((c) => c.length);
+/** Optional fixed columns. ";" separates floors, "|" separates columns, e.g. NEXT_PUBLIC_ROOM_COLUMNS="Salón,Pasillo bajo|Cocina,Baño invitados;Habitación principal|Estudio". Rooms not listed follow in the last column. */
+const ROOM_LAYOUTS = (process.env.NEXT_PUBLIC_ROOM_COLUMNS ?? "")
+  .split(";")
+  .map((f) => f.split("|").map((c) => c.split(",").map(norm).filter(Boolean)).filter((c) => c.length))
+  .filter((f) => f.length);
 const splitColumns = <T extends { name: string }>(rooms: T[]): T[][] | null => {
-  if (!ROOM_COLUMNS.length || !rooms.some((r) => ROOM_COLUMNS.some((c) => c.includes(norm(r.name))))) return null;
-  const cols: T[][] = ROOM_COLUMNS.map(() => []);
+  const layout = ROOM_LAYOUTS.find((f) => rooms.some((r) => f.some((c) => c.includes(norm(r.name)))));
+  if (!layout) return null;
+  const cols: T[][] = layout.map(() => []);
   for (const r of rooms) {
-    const i = ROOM_COLUMNS.findIndex((c) => c.includes(norm(r.name)));
+    const i = layout.findIndex((c) => c.includes(norm(r.name)));
     cols[i === -1 ? cols.length - 1 : i]!.push(r);
   }
-  for (const [i, c] of cols.entries()) c.sort((a, b) => ROOM_COLUMNS[i]!.indexOf(norm(a.name)) - ROOM_COLUMNS[i]!.indexOf(norm(b.name)));
+  for (const [i, c] of cols.entries()) c.sort((a, b) => layout[i]!.indexOf(norm(a.name)) - layout[i]!.indexOf(norm(b.name)));
   return cols;
 };
 const roomRank = (name: string) => {
