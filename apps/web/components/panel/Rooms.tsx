@@ -8,7 +8,7 @@ import { BlindPill } from "./Blind";
 import { CameraDialog, Cameras, isSd, useCameras } from "./Cameras";
 import { Climate, useClimateSystem } from "./Climate";
 import { Music, useMusicAssistant } from "./Music";
-import { BlindIcon, BulbIcon, CameraIcon, FanIcon, DownlightIcon, FlameIcon, PendantIcon, PlafonIcon, SquarePanelIcon, LedStripIcon, FloorIcon, GardenIcon, MusicIcon, PlugIcon, TempIcon, ThermostatIcon, TvIcon } from "./icons";
+import { BlindIcon, BulbIcon, CameraIcon, FanIcon, DownlightIcon, FlameIcon, PendantIcon, PlafonIcon, LedStripIcon, FloorIcon, GardenIcon, MusicIcon, PlugIcon, TempIcon, ThermostatIcon, TvIcon } from "./icons";
 
 const ORDER = ["light", "switch", "cover", "fan", "climate", "media_player"];
 /** Integrations whose switches are settings, not room controls. */
@@ -313,8 +313,7 @@ function Control({ entity, label, onToggle }: { entity: HassEntity; label: strin
     : /^mdi:led/.test(String(entity.attributes.icon ?? "")) ? LedStripIcon // set per entity in HA
     : /^mdi:(light-recessed|lightbulb-spot)/.test(String(entity.attributes.icon ?? "")) ? DownlightIcon
     : /^mdi:ceiling-light(?!-multiple)/.test(String(entity.attributes.icon ?? "")) ? PlafonIcon
-    : /^mdi:ceiling-light-multiple/.test(String(entity.attributes.icon ?? "")) ? SquarePanelIcon
-    : /^mdi:(chandelier|lamp|vanity-light)/.test(String(entity.attributes.icon ?? "")) ? PendantIcon
+    : /^mdi:(chandelier|lamp|ceiling-light-multiple|vanity-light)/.test(String(entity.attributes.icon ?? "")) ? PendantIcon
     : BulbIcon;
   const state = stateText(entity, domain, on);
   if (domain === "cover") return <BlindPill entity={entity} label={label} />;
