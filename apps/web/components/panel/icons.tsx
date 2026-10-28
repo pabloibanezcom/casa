@@ -123,8 +123,13 @@ export const FloorIcon = ({ storey, size = 18 }: P & { storey: number }) => (
     <rect x="5.5" y={storey === 0 ? 14.5 : 9.2} width="13" height={storey === 0 ? 5.5 : 5.3} fill="currentColor" opacity="0.35" stroke="none" />
   </svg>
 );
+/** House with a fence in front: "outside the house". */
 export const GardenIcon = ({ size = 18 }: P) => (
-  <svg {...base(size)}><path d="M12 21v-7M12 14c-3.5 0-6-2.4-6-5.5S8.5 3 12 3s6 2.4 6 5.5S15.5 14 12 14zM5 21h14" /></svg>
+  <svg {...base(size)}>
+    <path d="M4 11 12 4l8 7" />
+    <path d="M7 9.5V13M17 9.5V13" />
+    <path d="M4.5 21v-5M10 21v-5M14 21v-5M19.5 21v-5M3 18h18" />
+  </svg>
 );
 
 export const HomeIcon = ({ size = 22 }: P) => (

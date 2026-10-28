@@ -53,7 +53,7 @@ export function Rooms() {
     }
 
     const floorList = [...registries.floors].sort((a, b) => (a.level ?? 0) - (b.level ?? 0));
-    return [...floorList.map((f) => ({ id: f.floor_id, name: f.name, icon: f.icon ?? null })), { id: "", name: "Otras", icon: "mdi:tree" }]
+    return [...floorList.map((f) => ({ id: f.floor_id, name: f.name, icon: f.icon ?? null })), { id: "", name: "Otras", icon: "mdi:fence" }]
       .map((f) => ({
         ...f,
         rooms: registries.areas
