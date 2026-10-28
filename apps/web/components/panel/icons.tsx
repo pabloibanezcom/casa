@@ -53,6 +53,16 @@ export const PlafonIcon = ({ size = 22 }: P) => (
     <path d="M7.5 15l-1.5 3M12 15v3.5M16.5 15l1.5 3" />
   </svg>
 );
+/** Twin spotlight fixture: two GU10 cans on one ceiling plate. */
+export const SpotsIcon = ({ size = 22 }: P) => (
+  <svg {...base(size)}>
+    <path d="M4 4h16" />
+    <path d="M7.5 4v2.5M16.5 4v2.5" />
+    <rect x="4.5" y="6.5" width="6" height="5" rx="1.5" />
+    <rect x="13.5" y="6.5" width="6" height="5" rx="1.5" />
+    <path d="M6 15.5v3M9 15.5v3M15 15.5v3M18 15.5v3" />
+  </svg>
+);
 export const FanIcon = ({ size = 22 }: P) => (
   <svg {...base(size)}><circle cx="12" cy="12" r="1.6" /><path d="M12 10.4C11 6 12.5 3 15 3.5s2.2 4-1.4 7.2M13.4 12.8c3.9 2.2 5.4 5.2 3.6 7s-4.6-.6-5.3-5.3M10.6 12.6C6.4 14 3.5 12.8 3.6 10.3s3.8-3.2 7.4.4" /></svg>
 );
