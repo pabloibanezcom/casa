@@ -233,7 +233,7 @@ function Room({ room, entities, onToggle }: { room: RoomModel; entities: HassEnt
   // Two controls that would get the same label (a fan and its light) keep the "Luz" prefix to tell them apart.
   const base = rawControls.map((e) => shortName(e, room.name));
   const labels = new Map(
-    rawControls.map((e, i) => [e.entity_id, base.filter((l) => l.toLowerCase() === base[i]!.toLowerCase()).length > 1 && domainOf(e.entity_id) === "light" ? shortName(e, room.name, true) : base[i]!]),
+    rawControls.map((e, i): [string, string] => [e.entity_id, base.filter((l) => l.toLowerCase() === base[i]!.toLowerCase()).length > 1 && domainOf(e.entity_id) === "light" ? shortName(e, room.name, true) : base[i]!]),
   );
   const controls = [...rawControls].sort((a, b) => controlRank(labels.get(a.entity_id)!) - controlRank(labels.get(b.entity_id)!));
   const blinds = list.filter((e) => domainOf(e.entity_id) === "cover");
