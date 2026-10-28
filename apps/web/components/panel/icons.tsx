@@ -37,6 +37,14 @@ export const DownlightIcon = ({ size = 22 }: P) => (
     <path d="M8 16.5v2.5M12 16v3.5M16 16.5v2.5" />
   </svg>
 );
+/** Hanging pendant lamp with a rounded, woven-looking shade. */
+export const PendantIcon = ({ size = 22 }: P) => (
+  <svg {...base(size)}>
+    <path d="M12 3v3.5M10 6.5h4" />
+    <path d="M10 6.5C6 9.5 5 14 7.5 17.8c1.8 2.4 7.2 2.4 9 0C19 14 18 9.5 14 6.5" />
+    <path d="M6.6 12.8c3.3 1.4 6.5 1.4 10.8 0M8 16.2c2.4.9 5.6.9 8 0" />
+  </svg>
+);
 export const FanIcon = ({ size = 22 }: P) => (
   <svg {...base(size)}><circle cx="12" cy="12" r="1.6" /><path d="M12 10.4C11 6 12.5 3 15 3.5s2.2 4-1.4 7.2M13.4 12.8c3.9 2.2 5.4 5.2 3.6 7s-4.6-.6-5.3-5.3M10.6 12.6C6.4 14 3.5 12.8 3.6 10.3s3.8-3.2 7.4.4" /></svg>
 );
