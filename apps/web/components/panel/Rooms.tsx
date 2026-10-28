@@ -229,9 +229,13 @@ function Room({ room, entities, onToggle }: { room: RoomModel; entities: HassEnt
   const summary = summarize(list);
   // The thermostat is shown next to the room name instead of as a control.
   const climate = list.find((e) => domainOf(e.entity_id) === "climate");
-  const controls = list
-    .filter((e) => !["climate", "cover"].includes(domainOf(e.entity_id)))
-    .sort((a, b) => controlRank(shortName(a, room.name)) - controlRank(shortName(b, room.name)));
+  const rawControls = list.filter((e) => !["climate", "cover"].includes(domainOf(e.entity_id)));
+  // Two controls that would get the same label (a fan and its light) keep the "Luz" prefix to tell them apart.
+  const base = rawControls.map((e) => shortName(e, room.name));
+  const labels = new Map(
+    rawControls.map((e, i) => [e.entity_id, base.filter((l) => l.toLowerCase() === base[i]!.toLowerCase()).length > 1 && domainOf(e.entity_id) === "light" ? shortName(e, room.name, true) : base[i]!]),
+  );
+  const controls = [...rawControls].sort((a, b) => controlRank(labels.get(a.entity_id)!) - controlRank(labels.get(b.entity_id)!));
   const blinds = list.filter((e) => domainOf(e.entity_id) === "cover");
   const camera = room.cameraIds.map((id) => entities[id]).find((e): e is HassEntity => !!e && !isSd(e) && e.state !== "unavailable");
   const [viewing, setViewing] = useState(false);
@@ -255,7 +259,7 @@ function Room({ room, entities, onToggle }: { room: RoomModel; entities: HassEnt
       {controls.length > 0 && (
         <div className="controls">
           {controls.map((e) => (
-            <Control key={e.entity_id} entity={e} label={shortName(e, room.name)} onToggle={() => onToggle(e)} />
+            <Control key={e.entity_id} entity={e} label={labels.get(e.entity_id)!} onToggle={() => onToggle(e)} />
           ))}
         </div>
       )}
@@ -496,12 +500,12 @@ function summarize(list: HassEntity[]): { text: string; tone?: "on" | "warn" } {
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 /** "Luz pasillo cocina" in "Cocina" → "Luz pasillo"; never empty. */
-function shortName(e: HassEntity, areaName: string) {
+function shortName(e: HassEntity, areaName: string, keepPrefix = false) {
   const full = String(e.attributes.friendly_name ?? e.entity_id);
   const words = areaName.toLowerCase().split(/\s+/);
   const kept = full.split(/\s+/).filter((w) => !words.includes(w.toLowerCase()));
   // The icon already says it's a light or a switch, so "Luz escalera B" reads as "Escalera B".
-  if (kept.length > 1 && /^(luz|luces|interruptor)$/i.test(kept[0]!)) kept.shift();
+  if (!keepPrefix && kept.length > 1 && /^(luz|luces|interruptor)$/i.test(kept[0]!)) kept.shift();
   const short = kept.join(" ").trim();
   // A room's only light is just "Luz" once the room name is gone: call it the main one.
   if (/^luz(es)?$/i.test(short)) return "Principal";
