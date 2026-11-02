@@ -8,7 +8,7 @@ import { BlindPill } from "./Blind";
 import { CameraDialog, Cameras, isSd, useCameras } from "./Cameras";
 import { Climate, useClimateSystem } from "./Climate";
 import { Music, useMusicAssistant } from "./Music";
-import { BlindIcon, BulbIcon, CameraIcon, FanIcon, DownlightIcon, FlameIcon, PendantIcon, PlafonIcon, WallLightIcon, SpotsIcon, LedStripIcon, FloorIcon, GardenIcon, MusicIcon, PlugIcon, CarIcon, StringLightsIcon, TempIcon, ThermostatIcon, TvIcon } from "./icons";
+import { BlindIcon, BulbIcon, CameraIcon, FanIcon, DownlightIcon, FlameIcon, PendantIcon, PlafonIcon, WallLightIcon, SpotsIcon, LedStripIcon, FloorIcon, GardenIcon, MusicIcon, PlugIcon, CarIcon, StringLightsIcon, PlanterIcon, TempIcon, ThermostatIcon, TvIcon } from "./icons";
 
 const ORDER = ["light", "switch", "cover", "fan", "climate", "media_player"];
 /** Integrations whose switches are settings, not room controls. */
@@ -346,6 +346,7 @@ function Control({ entity, label, onToggle }: { entity: HassEntity; label: strin
     : domain === "fan" ? FanIcon
     : domain === "media_player" ? TvIcon
     : /^mdi:string-lights/.test(String(entity.attributes.icon ?? "")) ? StringLightsIcon
+    : /^mdi:(sprout|flower|flower-pot|planter|leaf)/.test(String(entity.attributes.icon ?? "")) ? PlanterIcon
     : entity.attributes.device_class === "outlet" ? PlugIcon
     : /^mdi:(car|garage)/.test(String(entity.attributes.icon ?? "")) ? CarIcon
     : /^mdi:led/.test(String(entity.attributes.icon ?? "")) ? LedStripIcon // set per entity in HA

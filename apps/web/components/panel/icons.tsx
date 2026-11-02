@@ -84,6 +84,15 @@ export const StringLightsIcon = ({ size = 22 }: P) => (
     <circle cx="18.5" cy="13" r="1.8" />
   </svg>
 );
+/** Planter: a trough with plants growing out of it. */
+export const PlanterIcon = ({ size = 22 }: P) => (
+  <svg {...base(size)}>
+    <path d="M3.5 13h17l-1.6 7H5.1z" />
+    <path d="M12 13V8" />
+    <path d="M12 9.5c0-2.5-1.8-4-4.5-4 0 2.6 1.8 4 4.5 4zM12 8c0-2.2 1.6-3.5 4-3.5 0 2.3-1.6 3.5-4 3.5z" />
+    <path d="M6.5 13v-2M17.5 13v-1.5" />
+  </svg>
+);
 /** Car, side view (garage). */
 export const CarIcon = ({ size = 22 }: P) => (
   <svg {...base(size)}>
