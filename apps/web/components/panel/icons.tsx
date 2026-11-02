@@ -74,6 +74,34 @@ export const WallLightIcon = ({ size = 22 }: P) => (
 export const FanIcon = ({ size = 22 }: P) => (
   <svg {...base(size)}><circle cx="12" cy="12" r="1.6" /><path d="M12 10.4C11 6 12.5 3 15 3.5s2.2 4-1.4 7.2M13.4 12.8c3.9 2.2 5.4 5.2 3.6 7s-4.6-.6-5.3-5.3M10.6 12.6C6.4 14 3.5 12.8 3.6 10.3s3.8-3.2 7.4.4" /></svg>
 );
+/** String (fairy/Christmas) lights: a sagging wire with small bulbs hanging from it. */
+export const StringLightsIcon = ({ size = 22 }: P) => (
+  <svg {...base(size)}>
+    <path d="M2.5 6c3 3.5 6 3.5 9.5 0 3.5 3.5 6.5 3.5 9.5 0" />
+    <path d="M5.5 8.6v2M12 9.5v2M18.5 8.6v2" />
+    <circle cx="5.5" cy="13" r="1.8" />
+    <circle cx="12" cy="14" r="1.8" />
+    <circle cx="18.5" cy="13" r="1.8" />
+  </svg>
+);
+/** Planter: a trough with plants growing out of it. */
+export const PlanterIcon = ({ size = 22 }: P) => (
+  <svg {...base(size)}>
+    <path d="M3.5 13h17l-1.6 7H5.1z" />
+    <path d="M12 13V8" />
+    <path d="M12 9.5c0-2.5-1.8-4-4.5-4 0 2.6 1.8 4 4.5 4zM12 8c0-2.2 1.6-3.5 4-3.5 0 2.3-1.6 3.5-4 3.5z" />
+    <path d="M6.5 13v-2M17.5 13v-1.5" />
+  </svg>
+);
+/** Car, side view (garage). */
+export const CarIcon = ({ size = 22 }: P) => (
+  <svg {...base(size)}>
+    <path d="M3 16v-3.5l2-4.5a2 2 0 0 1 1.8-1.2h10.4A2 2 0 0 1 19 8l2 4.5V16a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z" />
+    <path d="M3 12.5h18" />
+    <circle cx="7.5" cy="17" r="1.8" />
+    <circle cx="16.5" cy="17" r="1.8" />
+  </svg>
+);
 export const PlugIcon = ({ size = 22 }: P) => (
   <svg {...base(size)}><path d="M9 3v5M15 3v5M7 8h10v3a5 5 0 0 1-10 0V8zM12 16v5" /></svg>
 );
