@@ -278,7 +278,8 @@ h2 { margin: 0; }
   border: 1px solid var(--line); background: var(--inset); color: var(--text-2);
   font-size: 13px; min-width: 0; user-select: none; -webkit-user-select: none;
 }
-.control[data-dimmable] { touch-action: pan-y; cursor: ew-resize; }
+.control[data-dimmable] { touch-action: pan-y; cursor: ew-resize; -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; }
+.blind__sheet > .blind__side { gap: 14px; }
 .control__fill {
   position: absolute; inset: 0 auto 0 0; z-index: -1;
   background: color-mix(in srgb, var(--accent) 45%, transparent); transition: width 0.25s ease-out;

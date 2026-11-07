@@ -7,6 +7,7 @@ import { degrees } from "@/lib/format";
 import { BlindPill } from "./Blind";
 import { CameraDialog, Cameras, isSd, useCameras } from "./Cameras";
 import { Climate, useClimateSystem } from "./Climate";
+import { LightDialog } from "./LightDialog";
 import { Music, useMusicAssistant } from "./Music";
 import { BlindIcon, BulbIcon, CameraIcon, FanIcon, DownlightIcon, FlameIcon, PendantIcon, PlafonIcon, WallLightIcon, SpotsIcon, LedStripIcon, FloorIcon, GardenIcon, MusicIcon, PlugIcon, CarIcon, StringLightsIcon, PlanterIcon, TempIcon, ThermostatIcon, TvIcon } from "./icons";
 
@@ -381,6 +382,7 @@ function brightnessPct(e: HassEntity): number | null {
 }
 
 const DRAG_THRESHOLD = 6;
+const HOLD_MS = 500;
 
 /**
  * A pill whose green fill shows how "on" something is. Tap toggles; on dimmable lights,
@@ -396,6 +398,9 @@ function LevelPill({ entity, domain, on, label, state, icon, disabled, onToggle 
   const [pending, setPending] = useState<number | null>(null);
   const start = useRef<{ x: number; moved: boolean } | null>(null);
   const justDragged = useRef(false);
+  const [dialog, setDialog] = useState(false);
+  const hold = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const cancelHold = () => clearTimeout(hold.current);
 
   // Drop the optimistic value as soon as HA reports the new state.
   useEffect(() => setPending(null), [entity.state, entity.attributes.brightness]);
@@ -414,6 +419,16 @@ function LevelPill({ entity, domain, on, label, state, icon, disabled, onToggle 
   const onPointerDown = (e: PointerEvent<HTMLButtonElement>) => {
     if (disabled || dimmable === null) return;
     start.current = { x: e.clientX, moved: false };
+    // Holding without moving opens the brightness popup.
+    cancelHold();
+    hold.current = setTimeout(() => {
+      if (!start.current || start.current.moved) return;
+      start.current = null;
+      // The release after a long press can end in a click on this button; ignore it.
+      justDragged.current = true;
+      setTimeout(() => { justDragged.current = false; }, 1500);
+      setDialog(true);
+    }, HOLD_MS);
   };
   const onPointerMove = (e: PointerEvent<HTMLButtonElement>) => {
     const s = start.current;
@@ -421,11 +436,13 @@ function LevelPill({ entity, domain, on, label, state, icon, disabled, onToggle 
     if (!s.moved && Math.abs(e.clientX - s.x) < DRAG_THRESHOLD) return;
     if (!s.moved) {
       s.moved = true;
+      cancelHold();
       e.currentTarget.setPointerCapture(e.pointerId);
     }
     setDrag(fromPointer(e.currentTarget, e.clientX));
   };
   const onPointerEnd = () => {
+    cancelHold();
     const s = start.current;
     start.current = null;
     if (!s?.moved || drag === null) return;
@@ -448,6 +465,7 @@ function LevelPill({ entity, domain, on, label, state, icon, disabled, onToggle 
   };
 
   return (
+    <>
     <button
       type="button"
       className={`control${drag !== null ? " control--dragging" : ""}`}
@@ -457,7 +475,8 @@ function LevelPill({ entity, domain, on, label, state, icon, disabled, onToggle 
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerEnd}
-      onPointerCancel={() => { start.current = null; setDrag(null); }}
+      onPointerCancel={() => { cancelHold(); start.current = null; setDrag(null); }}
+      onContextMenu={dimmable !== null ? (e) => e.preventDefault() : undefined}
       title={entity.attributes.friendly_name}
       aria-label={`${label}: ${state}`}
       data-dimmable={dimmable !== null || undefined}
@@ -471,6 +490,8 @@ function LevelPill({ entity, domain, on, label, state, icon, disabled, onToggle 
       </span>
       {dimmable !== null && lit && <span className="control__value num" aria-hidden="true">{level}%</span>}
     </button>
+    {dialog && <LightDialog entity={entity} label={label} onClose={() => setDialog(false)} />}
+    </>
   );
 }
 
