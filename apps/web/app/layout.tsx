@@ -9,6 +9,8 @@ const display = Sora({ subsets: ["latin"], weight: ["200", "300", "400", "600"],
 export const metadata: Metadata = {
   title: "Casa",
   description: "Panel de control de la casa",
+  icons: { icon: "/icons/icon.svg", apple: "/icons/apple-touch-icon.png" },
+  appleWebApp: { capable: true, title: "Casa", statusBarStyle: "black-translucent" },
 };
 
 export const viewport: Viewport = {
