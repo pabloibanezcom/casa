@@ -6,11 +6,14 @@ import "./globals.css";
 const body = Figtree({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-body" });
 const display = Sora({ subsets: ["latin"], weight: ["200", "300", "400", "600"], variable: "--font-display" });
 
+const preview = process.env.VERCEL_ENV === "preview";
+const icons = preview ? "/icons/preview-" : "/icons/";
+
 export const metadata: Metadata = {
-  title: "Casa",
+  title: preview ? "Casa (preview)" : "Casa",
   description: "Panel de control de la casa",
-  icons: { icon: "/icons/icon.svg", apple: "/icons/apple-touch-icon.png" },
-  appleWebApp: { capable: true, title: "Casa", statusBarStyle: "black-translucent" },
+  icons: { icon: `${icons}icon.svg`, apple: `${icons}apple-touch-icon.png` },
+  appleWebApp: { capable: true, title: preview ? "Casa Prev" : "Casa", statusBarStyle: "black-translucent" },
 };
 
 export const viewport: Viewport = {
