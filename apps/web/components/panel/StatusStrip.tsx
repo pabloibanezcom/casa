@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
+import { useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import { applianceStatus, domainOf, findAppliances, type ApplianceStatus, type HassEntity } from "@casa/core";
-import { useCallService, useEntities, useHA } from "@casa/core/react";
+import { useEntities, useHA } from "@casa/core/react";
 import { dayLabel, duration, time } from "@/lib/format";
 import { LockIcon, LockOpenIcon } from "./icons";
+import { batteryLow, LockSheet, lockLabel, useLockExtras } from "./LockSheet";
 import { MusicStatusCard, useActivePlayers } from "./Music";
 import { useNow } from "./useNow";
 
@@ -91,63 +92,41 @@ function ApplianceCard({ name, status, now }: { name: string; status: ApplianceS
   );
 }
 
-const CONFIRM_MS = 4000;
 
 /**
- * The front door as one button: red while locked. Tapping locks straight away;
- * unlocking needs a second tap within a few seconds so a stray touch can't open the house.
+ * The front door as one button: red while locked. Tapping opens the door sheet
+ * (lock, unlock, open the latch, Lock 'n' Go); the tile warns when the battery is low.
  */
 function LockButton({ lock }: { lock: HassEntity }) {
-  const callService = useCallService();
-  const [armed, setArmed] = useState(false);
+  const [open, setOpen] = useState(false);
+  const extras = useLockExtras(lock);
   const state = lock.state;
   const locked = state === "locked";
-  const busy = state === "locking" || state === "unlocking" || state === "opening";
-
-  useEffect(() => {
-    if (!armed) return;
-    const id = setTimeout(() => setArmed(false), CONFIRM_MS);
-    return () => clearTimeout(id);
-  }, [armed]);
-  useEffect(() => setArmed(false), [state]);
-
-  const label =
-    armed ? "Toca para abrir"
-    : state === "locked" ? "Cerrada con llave"
-    : state === "unlocked" ? "Sin llave"
-    : state === "open" ? "Abierta"
-    : state === "locking" ? "Cerrando…"
-    : state === "unlocking" || state === "opening" ? "Abriendo…"
-    : state === "jammed" ? "Atascada"
-    : state === "unavailable" ? "Sin conexión"
-    : state;
-
-  const onClick = () => {
-    const target = { entity_id: lock.entity_id };
-    if (locked) {
-      if (!armed) return setArmed(true);
-      setArmed(false);
-      void callService("lock", "unlock", {}, target);
-    } else {
-      void callService("lock", "lock", {}, target);
-    }
-  };
+  const low = batteryLow(extras);
+  const label = lockLabel(state);
 
   return (
-    <button
-      type="button"
-      className="card status lock-btn"
-      data-state={armed ? "armed" : state}
-      disabled={state === "unavailable" || busy}
-      onClick={onClick}
-      aria-label={`Puerta: ${label}. ${locked ? "Tocar para abrir" : "Tocar para cerrar"}`}
-    >
-      <span className="lock-btn__icon">{locked ? <LockIcon /> : <LockOpenIcon />}</span>
-      <span className="lock-btn__text">
-        <span className="status__title">Puerta</span>
-        <span className="status__line">{label}</span>
-      </span>
-    </button>
+    <>
+      <button
+        type="button"
+        className="card status lock-btn"
+        data-state={state}
+        aria-haspopup="dialog"
+        disabled={state === "unavailable"}
+        onClick={() => setOpen(true)}
+        aria-label={`Puerta: ${label}${low ? ". Batería baja" : ""}. Abrir control`}
+      >
+        <span className="lock-btn__icon">{locked ? <LockIcon /> : <LockOpenIcon />}</span>
+        <span className="lock-btn__text">
+          <span className="status__title">Puerta</span>
+          <span className="status__line">
+            {label}
+            {low && <span className="warn lock-btn__batt"> · batería {extras.critical ? "crítica" : `${extras.battery} %`}</span>}
+          </span>
+        </span>
+      </button>
+      {open && <LockSheet lock={lock} extras={extras} onClose={() => setOpen(false)} />}
+    </>
   );
 }
 

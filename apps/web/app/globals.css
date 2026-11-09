@@ -198,6 +198,21 @@ h2 { margin: 0; }
 .lock-btn[data-state="locked"] .lock-btn__icon, .lock-btn[data-state="armed"] .lock-btn__icon { background: var(--warn); color: var(--surface); }
 .lock-btn[data-state="locked"] .status__line, .lock-btn[data-state="armed"] .status__line { color: var(--warn); }
 .lock-btn[data-state="armed"] { animation: lock-pulse 1s ease-in-out infinite alternate; }
+.lock-btn[data-state="armed"] { animation: none; }
+.lock-sheet__battery { margin: 0; font-size: 14px; display: flex; align-items: center; gap: 10px; color: var(--text-2); }
+.lock-sheet__bar { flex: 1; height: 6px; border-radius: 3px; background: var(--inset); overflow: hidden; }
+.lock-sheet__bar > span { display: block; height: 100%; background: var(--accent); }
+.lock-sheet__battery.warn .lock-sheet__bar > span { background: var(--warn); }
+.lock-sheet__actions { display: flex; flex-direction: column; gap: 8px; }
+.lock-sheet__action { display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 8px 14px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--inset); font: inherit; color: var(--text); text-align: left; cursor: pointer; }
+.lock-sheet__action:active { transform: scale(0.99); }
+.lock-sheet__action:disabled { opacity: 0.5; cursor: default; }
+.lock-sheet__action[data-armed] { background: var(--warn); border-color: transparent; color: var(--surface); }
+.lock-sheet__icon { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: var(--surface); color: var(--accent-text); flex-shrink: 0; }
+.lock-sheet__action[data-armed] .lock-sheet__icon { color: var(--warn); }
+.lock-sheet__text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.lock-sheet__label { font-weight: 600; font-size: 16px; }
+.lock-sheet__sub { font-size: 13px; color: var(--muted); }
 .lock-btn:disabled { cursor: default; opacity: 0.6; }
 @keyframes lock-pulse { to { border-color: var(--warn); } }
 @media (prefers-reduced-motion: reduce) { .lock-btn[data-state="armed"] { animation: none; } }
