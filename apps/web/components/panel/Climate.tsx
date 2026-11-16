@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, type CSSProperties, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { findClimateSystem, isHeating, PRESET_LABELS, type ClimateZone, type HassEntities } from "@casa/core";
 import { useCallService, useEntities, useHA } from "@casa/core/react";
 import { degrees } from "@/lib/format";
@@ -113,7 +113,7 @@ export function Climate() {
       </section>
 
       {openId && <div className="zone-backdrop" onClick={close} aria-hidden="true" />}
-      <div className="climate__floors">
+      <div className="climate__floors" style={{ "--floors": Math.min(floors.length, 3) } as CSSProperties}>
         {floors.map((f) => (
           <section key={f.id ?? "none"} aria-label={f.name}>
             <h2 className="eyebrow climate__floor">{f.name}</h2>
