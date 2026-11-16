@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, type CSSProperties, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { findClimateSystem, isHeating, PRESET_LABELS, type ClimateZone, type HassEntities } from "@casa/core";
 import { useCallService, useEntities, useHA } from "@casa/core/react";
 import { degrees } from "@/lib/format";
@@ -113,7 +113,7 @@ export function Climate() {
       </section>
 
       {openId && <div className="zone-backdrop" onClick={close} aria-hidden="true" />}
-      <div className="climate__floors">
+      <div className="climate__floors" style={{ "--floors": Math.min(floors.length, 3) } as CSSProperties}>
         {floors.map((f) => (
           <section key={f.id ?? "none"} aria-label={f.name}>
             <h2 className="eyebrow climate__floor">{f.name}</h2>
@@ -211,19 +211,21 @@ function Zone({
         <button type="button" className="zone__summary" aria-expanded={open} onClick={onToggle}>
           <span className="zone__row">
             <span className="zone__name">{name}</span>
-            <span className={`zone__state ${unavailable ? "warn" : ""}`}>
-              {heating && <FlameIcon size={14} />}
-              {eco && !heating && !off && <LeafIcon size={14} />}
-              {state}
-            </span>
           </span>
           <span className="zone__row zone__row--temps">
             <span className="zone__current display num">{Number.isFinite(current) ? degrees(current, 1) : "—"}</span>
-            {!off && setpoint.value != null && (
-              <span className={`zone__target num ${setpoint.pending ? "is-pending" : ""}`}>
-                <span className="sr-only">Objetivo </span>→ {degrees(setpoint.value, 1)}
+            <span className="zone__side">
+              {!off && setpoint.value != null && (
+                <span className={`zone__target num ${setpoint.pending ? "is-pending" : ""}`}>
+                  <span className="sr-only">Objetivo </span>→ {degrees(setpoint.value, 1)}
+                </span>
+              )}
+              <span className={`zone__state ${unavailable ? "warn" : ""}`}>
+                {heating && <FlameIcon size={14} />}
+                {eco && !heating && !off && <LeafIcon size={14} />}
+                {state}
               </span>
-            )}
+            </span>
           </span>
         </button>
 
