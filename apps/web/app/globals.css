@@ -335,10 +335,11 @@ h2 { margin: 0; }
 
 /* Climate tab */
 .climate { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 10px; }
-.climate-summary { padding: 8px 12px 8px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-.climate-summary__text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.climate-summary { padding: 8px 12px 8px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.climate-summary__text { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1 1 0; }
+.climate-summary__text .status__sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .climate-summary__title { font-weight: 600; font-size: 16px; }
-.climate-summary__actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.climate-summary__actions { display: flex; gap: 8px; align-items: center; flex: none; }
 .climate-summary .segmented { padding: 3px; gap: 3px; }
 .climate-summary .segmented button { min-height: 34px; padding: 0 12px; font-size: 14px; }
 .climate-summary .control { min-height: 40px; }
@@ -347,6 +348,8 @@ h2 { margin: 0; }
 @media (min-width: 900px) {
   .climate__floors { display: grid; grid-template-columns: repeat(var(--floors, 2), minmax(0, 1fr)); align-content: start; gap: 16px; }
   .climate__floors .zones { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .climate__floors .zone__summary { padding: 12px; }
+  .climate__floors .zone__current { font-size: 28px; }
 }
 .climate__floor { margin: 4px 4px 8px; }
 
@@ -385,7 +388,9 @@ h2 { margin: 0; }
 .zone__state { font-size: 13px; color: var(--muted); display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; flex-shrink: 0; }
 .zone--heating .zone__state { color: var(--sun); }
 .zone__current { font-size: 34px; font-weight: 300; line-height: 1; letter-spacing: -0.02em; }
-.zone__target { font-size: 15px; color: var(--muted); white-space: nowrap; }
+.zone__side { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; min-width: 0; }
+.zone__row--temps { align-items: flex-end; }
+.zone__target { font-size: 14px; color: var(--muted); white-space: nowrap; }
 .is-pending { color: var(--accent-text); }
 
 .zone__controls { padding: 0 12px 12px; display: flex; flex-direction: column; gap: 10px; }

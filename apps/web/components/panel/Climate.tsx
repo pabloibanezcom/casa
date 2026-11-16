@@ -211,19 +211,21 @@ function Zone({
         <button type="button" className="zone__summary" aria-expanded={open} onClick={onToggle}>
           <span className="zone__row">
             <span className="zone__name">{name}</span>
-            <span className={`zone__state ${unavailable ? "warn" : ""}`}>
-              {heating && <FlameIcon size={14} />}
-              {eco && !heating && !off && <LeafIcon size={14} />}
-              {state}
-            </span>
           </span>
           <span className="zone__row zone__row--temps">
             <span className="zone__current display num">{Number.isFinite(current) ? degrees(current, 1) : "—"}</span>
-            {!off && setpoint.value != null && (
-              <span className={`zone__target num ${setpoint.pending ? "is-pending" : ""}`}>
-                <span className="sr-only">Objetivo </span>→ {degrees(setpoint.value, 1)}
+            <span className="zone__side">
+              {!off && setpoint.value != null && (
+                <span className={`zone__target num ${setpoint.pending ? "is-pending" : ""}`}>
+                  <span className="sr-only">Objetivo </span>→ {degrees(setpoint.value, 1)}
+                </span>
+              )}
+              <span className={`zone__state ${unavailable ? "warn" : ""}`}>
+                {heating && <FlameIcon size={14} />}
+                {eco && !heating && !off && <LeafIcon size={14} />}
+                {state}
               </span>
-            )}
+            </span>
           </span>
         </button>
 
